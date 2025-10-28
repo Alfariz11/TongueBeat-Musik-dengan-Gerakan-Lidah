@@ -23,6 +23,6 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna memainkan 
 
 | Tanggal | Kegiatan | Hasil / Progress |
 |---------|-----------|------------------|
-| 10/28/2025 | Pembuatan Repositori githu Tugas Besar | Repositori github tugas besar |
+| 10/28/2025 | Pembuatan Repositori github Tugas Besar | Repositori github tugas besar |
 
 ---
