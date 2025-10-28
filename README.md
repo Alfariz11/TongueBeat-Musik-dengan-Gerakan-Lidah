@@ -13,9 +13,9 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna memainkan 
 
 | Nama Lengkap | NIM | ID GitHub |
 |---------------|-----|-----------|
-| Rizki Alfariz | 122140061 | [@Alfariz11](https://github.com/Alfariz11) |
-| fathan Andi Kartagama | 122140055 |[@pataanggs]( https://github.com/pataanggs) |
 | A Edwin Krisandika Putra | 122140003 |[@aloisiusedwin]( https://github.com/aloisiusedwin) |
+| fathan Andi Kartagama | 122140055 |[@pataanggs]( https://github.com/pataanggs) |
+| Rizki Alfariz Ramadhan | 122140061 | [@Alfariz11](https://github.com/Alfariz11) |
 
 ---
 
