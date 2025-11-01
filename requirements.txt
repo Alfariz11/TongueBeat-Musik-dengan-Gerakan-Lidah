@@ -1,21 +1,10 @@
-# Core dependencies with version pinning for compatibility
-# Compatible with Python 3.8-3.11
-
-# Computer vision and face detection
-opencv-contrib-python==4.8.1.78
-mediapipe==0.10.14
-dlib
-imutils==0.5.4
-
-# Scientific computing
-numpy==1.24.3
-scipy==1.10.1
-
-# Visualization
-matplotlib==3.7.1
-
-# Build dependencies (needed for dlib on some systems)
-cmake>=3.18.0
-
-# Audio playback for drum sounds
-pygame>=2.1.0
+# Hand-Controlled Arpeggiator and Drum Machine Requirements
+opencv-python>=4.8.0
+mediapipe>=0.10.0
+numpy>=1.24.0
+pygame>=2.5.0
+mido>=1.3.0
+python-rtmidi>=1.5.0
+scipy>=1.11.0
+matplotlib>=3.7.0
+pillow>=10.0.0
