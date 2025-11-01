@@ -22,21 +22,31 @@ from visualizer import Visualizer
 
 class MusicController:
     def __init__(self):
-        print("Initializing Hand-Controlled Music Generator...")
-
-        # Initialize components
+        print("\n[1/5] Initializing Hand Tracker...")
         self.hand_tracker = HandTracker()
+        print("      Hand tracker ready!")
+
+        print("\n[2/5] Initializing Arpeggiator...")
         self.arpeggiator = Arpeggiator()
+        print("      Arpeggiator ready!")
+
+        print("\n[3/5] Loading Drum Sounds...")
         self.drum_machine = DrumMachine()
+
+        print("\n[4/5] Initializing Visualizer...")
         self.visualizer = Visualizer(width=1280, height=720)
+        print("      Visualizer ready!")
 
         # Camera setup
+        print("\n[5/5] Setting up Camera...")
         self.camera = cv2.VideoCapture(0)
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
         if not self.camera.isOpened():
             raise RuntimeError("Could not open camera!")
+
+        print("      Camera ready!")
 
         # Timing
         self.start_time = time.time()
@@ -52,14 +62,25 @@ class MusicController:
         self.volume = 0.3
         self.fingers_extended_right = [False] * 5
 
-        print("* Initialization complete!")
-        print("\nControls:")
-        print("  Left Hand (Arpeggiator):")
-        print("    - Raise hand = Higher pitch")
-        print("    - Pinch fingers = Change volume")
-        print("  Right Hand (Drums):")
-        print("    - Change finger positions = Switch drum patterns")
-        print("\nPress 'Q' to quit\n")
+        print("\n" + "="*60)
+        print("  INITIALIZATION COMPLETE!")
+        print("="*60)
+        print("\n  CONTROLS:")
+        print("  " + "-"*56)
+        print("  LEFT HAND (Arpeggiator):")
+        print("    * Raise hand up/down    -> Change pitch")
+        print("    * Pinch thumb & index   -> Control volume")
+        print("")
+        print("  RIGHT HAND (Drums):")
+        print("    * No fingers            -> Pattern 1 (Basic 4/4)")
+        print("    * Index finger          -> Pattern 1 (Basic 4/4)")
+        print("    * Index + Middle        -> Pattern 2 (With clap)")
+        print("    * Index + Middle + Ring -> Pattern 3 (Syncopated)")
+        print("    * All except thumb      -> Pattern 4 (Break beat)")
+        print("    * All fingers           -> Pattern 5 (Minimal)")
+        print("  " + "-"*56)
+        print("\n  Press 'Q' or 'ESC' to quit")
+        print("  " + "="*56 + "\n")
 
     def update_fps(self):
         """Calculate FPS"""
@@ -104,7 +125,7 @@ class MusicController:
 
     def run(self):
         """Main application loop"""
-        print("Starting main loop...")
+        print("\n[*] Starting main loop...")
 
         try:
             while self.running:
@@ -182,11 +203,10 @@ class MusicController:
 
 def main():
     """Entry point"""
-    print("=" * 60)
+    print("\n" + "=" * 60)
     print("  HAND-CONTROLLED MUSIC GENERATOR")
     print("  Arpeggiator + Drum Machine + Visualizer")
     print("=" * 60)
-    print()
 
     try:
         controller = MusicController()

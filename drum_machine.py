@@ -3,8 +3,7 @@ Drum Machine Controller
 Hand #2 controls the drums (raise different fingers to change the pattern)
 """
 import pygame
-import numpy as np
-import array
+import os
 
 
 class DrumMachine:
@@ -12,17 +11,24 @@ class DrumMachine:
         # Larger buffer for smoother playback (but slightly more latency)
         pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024)
 
-        # Drum samples (we'll generate them synthetically)
+        # Drum samples (loaded from assets folder)
         self.drum_sounds = {
             'kick': None,
             'snare': None,
             'hihat': None,
             'clap': None,
-            'tom': None
         }
 
-        # Generate synthetic drum sounds
-        self._generate_drum_sounds()
+        # Volume control for each drum
+        self.drum_volumes = {
+            'kick': 0.8,
+            'snare': 0.7,
+            'hihat': 0.5,
+            'clap': 0.6,
+        }
+
+        # Load drum sounds from assets folder
+        self._load_drum_sounds()
 
         # Timing
         self.bpm = 120
@@ -48,12 +54,12 @@ class DrumMachine:
                 'kick': [0, 3, 6, 10, 13],
                 'snare': [4, 12],
                 'hihat': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-                'tom': [7, 15],
+                'clap': [7, 15],
             },
             'pattern4': {  # Break beat
                 'kick': [0, 3, 8, 11],
                 'snare': [4, 10, 13],
-                'hihat': [2, 6, 14],
+                'hihat': [2, 6, 10, 14],
                 'clap': [4, 12],
             },
             'pattern5': {  # Minimal
@@ -76,81 +82,40 @@ class DrumMachine:
             (True, True, True, True, True): 'pattern5',       # All fingers
         }
 
-    def _generate_drum_sounds(self):
-        """Generate synthetic drum sounds"""
-        sample_rate = 44100
+    def _load_drum_sounds(self):
+        """Load drum sounds from assets folder"""
+        # Get the path to assets folder
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        assets_dir = os.path.join(current_dir, 'assets')
 
-        # Kick drum - low frequency punch
-        duration = 0.3
-        t = np.linspace(0, duration, int(sample_rate * duration), False)
-        freq = 60 * np.exp(-10 * t)  # Pitch envelope
-        kick = np.sin(2 * np.pi * freq * t)
-        envelope = np.exp(-8 * t)
-        kick = kick * envelope * 0.8
-        kick_buffer = array.array('h')
-        for sample in kick:
-            val = int(sample * 32767)
-            kick_buffer.append(val)
-            kick_buffer.append(val)
-        self.drum_sounds['kick'] = pygame.mixer.Sound(buffer=kick_buffer)
+        # Map of drum names to filenames
+        sound_files = {
+            'kick': 'kick.wav',
+            'snare': 'snare.wav',
+            'hihat': 'hihat.wav',
+            'clap': 'clap.wav',
+        }
 
-        # Snare - noise with tone
-        duration = 0.15
-        t = np.linspace(0, duration, int(sample_rate * duration), False)
-        noise = np.random.uniform(-1, 1, len(t))
-        tone = np.sin(2 * np.pi * 200 * t)
-        snare = 0.7 * noise + 0.3 * tone
-        envelope = np.exp(-20 * t)
-        snare = snare * envelope * 0.6
-        snare_buffer = array.array('h')
-        for sample in snare:
-            val = int(sample * 32767)
-            snare_buffer.append(val)
-            snare_buffer.append(val)
-        self.drum_sounds['snare'] = pygame.mixer.Sound(buffer=snare_buffer)
+        # Load each sound file
+        loaded_count = 0
+        for drum_name, filename in sound_files.items():
+            filepath = os.path.join(assets_dir, filename)
+            try:
+                if os.path.exists(filepath):
+                    sound = pygame.mixer.Sound(filepath)
+                    # Set volume for this drum
+                    sound.set_volume(self.drum_volumes[drum_name])
+                    self.drum_sounds[drum_name] = sound
+                    loaded_count += 1
+                    print(f"  [OK] {drum_name.ljust(8)} - Volume: {self.drum_volumes[drum_name]:.1f}")
+                else:
+                    print(f"  [WARNING] {filename} not found in assets folder")
+                    self.drum_sounds[drum_name] = None
+            except Exception as e:
+                print(f"  [ERROR] Loading {filename}: {e}")
+                self.drum_sounds[drum_name] = None
 
-        # Hi-hat - high frequency noise
-        duration = 0.08
-        t = np.linspace(0, duration, int(sample_rate * duration), False)
-        hihat = np.random.uniform(-1, 1, len(t))
-        # High-pass filter effect
-        hihat = hihat * np.sin(2 * np.pi * 8000 * t)
-        envelope = np.exp(-40 * t)
-        hihat = hihat * envelope * 0.4
-        hihat_buffer = array.array('h')
-        for sample in hihat:
-            val = int(sample * 32767)
-            hihat_buffer.append(val)
-            hihat_buffer.append(val)
-        self.drum_sounds['hihat'] = pygame.mixer.Sound(buffer=hihat_buffer)
-
-        # Clap - short burst of noise
-        duration = 0.1
-        t = np.linspace(0, duration, int(sample_rate * duration), False)
-        clap = np.random.uniform(-1, 1, len(t))
-        # Double hit for clap effect
-        envelope = np.exp(-30 * t) + 0.5 * np.exp(-30 * (t - 0.02))
-        clap = clap * envelope * 0.5
-        clap_buffer = array.array('h')
-        for sample in clap:
-            val = int(sample * 32767)
-            clap_buffer.append(val)
-            clap_buffer.append(val)
-        self.drum_sounds['clap'] = pygame.mixer.Sound(buffer=clap_buffer)
-
-        # Tom - mid frequency tone
-        duration = 0.25
-        t = np.linspace(0, duration, int(sample_rate * duration), False)
-        freq = 150 * np.exp(-8 * t)
-        tom = np.sin(2 * np.pi * freq * t)
-        envelope = np.exp(-10 * t)
-        tom = tom * envelope * 0.7
-        tom_buffer = array.array('h')
-        for sample in tom:
-            val = int(sample * 32767)
-            tom_buffer.append(val)
-            tom_buffer.append(val)
-        self.drum_sounds['tom'] = pygame.mixer.Sound(buffer=tom_buffer)
+        print(f"\n  Loaded {loaded_count}/{len(sound_files)} drum sounds successfully")
 
     def update(self, fingers_extended, current_time):
         """Update drum machine based on finger positions
@@ -196,6 +161,13 @@ class DrumMachine:
         """Set the tempo"""
         self.bpm = bpm
         self.step_duration = 60.0 / self.bpm / 4
+
+    def set_drum_volume(self, drum_name, volume):
+        """Set volume for a specific drum (0.0 to 1.0)"""
+        if drum_name in self.drum_volumes:
+            self.drum_volumes[drum_name] = max(0.0, min(1.0, volume))
+            if self.drum_sounds[drum_name]:
+                self.drum_sounds[drum_name].set_volume(self.drum_volumes[drum_name])
 
     def get_pattern_name(self):
         """Get current pattern name"""
