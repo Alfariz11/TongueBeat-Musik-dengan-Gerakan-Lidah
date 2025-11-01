@@ -1,43 +1,142 @@
-# Hand Gesture Arpeggiator
+# MusikBeat - Hand-Controlled Music Generator
 
-Hand-controlled arpeggiator, drum machine, and audio reactive visualizer. Raise your hands to raise the roof!
+Hand-controlled music generator menggunakan computer vision untuk kontrol arpeggiator dan drum machine secara real-time.
 
-An interactive web app built with threejs, mediapipe computer vision, rosebud AI, and tone.js.
+## Features
 
-- Hand #1 controls the arpeggios (raise hand to raise pitch, pinch to change volume)
-- Hand #2 controls the drums (raise different fingers to change the pattern)
-
-[Video](https://youtu.be/JepIs-DTBgk?si=4Y-FrQDF6KNy662C) | [Live Demo](https://collidingscopes.github.io/arpeggiator/) | [More Code & Tutorials](https://funwithcomputervision.com/)
-
-<img src="assets/demo.png">
+- **Hand Tracking**: Menggunakan MediaPipe untuk deteksi tangan secara real-time
+- **Arpeggiator**: Kontrol pitch dengan tinggi tangan dan volume dengan pinch gesture
+- **Drum Machine**: 5 drum patterns berbeda dengan kontrol jari
+- **Audio Reactive Visualizer**: Visualisasi interaktif dengan particle effects
+- **Professional Sound Quality**: Menggunakan audio samples dari assets folder
 
 ## Requirements
 
-- Modern web browser with WebGL support
-- Camera access enabled for hand tracking
+- Python 3.8+
+- Webcam untuk hand tracking
+- Dependencies (install via pip):
+  ```
+  pygame
+  opencv-python
+  mediapipe
+  numpy
+  ```
 
-## Technologies
+## Installation
 
-- **MediaPipe** for hand tracking and gesture recognition
-- **Three.js** for audio reactive visual rendering
-- **Tone.js** for synthesizer sounds
-- **HTML5 Canvas** for visual feedback
-- **JavaScript** for real-time interaction
+1. Clone repository ini:
+   ```bash
+   git clone <repository-url>
+   cd MusikBeat
+   ```
 
-## Setup for Development
+2. Install dependencies:
+   ```bash
+   pip install pygame opencv-python mediapipe numpy
+   ```
 
+3. Pastikan folder `assets/` berisi file audio:
+   - kick.wav
+   - snare.wav
+   - hihat.wav
+   - clap.wav
+
+## Usage
+
+Jalankan aplikasi:
 ```bash
-# Clone this repository
-git clone https://github.com/collidingScopes/arpeggiator
-
-# Navigate to the project directory
-cd arpeggiator
-
-# Serve with your preferred method (example using Python)
-python -m http.server
+python main.py
 ```
 
-Then navigate to `http://localhost:8000` in your browser.
+### Controls
+
+**Left Hand (Arpeggiator):**
+- Naikkan/turunkan tangan → Ubah pitch
+- Pinch (thumb + index finger) → Kontrol volume
+
+**Right Hand (Drums):**
+- No fingers → Pattern 1 (Basic 4/4)
+- Index finger → Pattern 1 (Basic 4/4)
+- Index + Middle → Pattern 2 (With clap)
+- Index + Middle + Ring → Pattern 3 (Syncopated)
+- All except thumb → Pattern 4 (Break beat)
+- All fingers → Pattern 5 (Minimal)
+
+**Keyboard:**
+- Press `Q` or `ESC` to quit
+
+## Project Structure
+
+```
+MusikBeat/
+├── main.py              # Main application
+├── hand_tracker.py      # MediaPipe hand tracking
+├── arpeggiator.py       # Arpeggiator controller
+├── drum_machine.py      # Drum machine controller
+├── visualizer.py        # Audio reactive visualizer
+├── test_drums.py        # Test script untuk drum sounds
+├── assets/              # Audio files
+│   ├── kick.wav
+│   ├── snare.wav
+│   ├── hihat.wav
+│   └── clap.wav
+└── README.md
+```
+
+## Features Detail
+
+### Hand Tracking
+- Menggunakan MediaPipe Hands dengan model complexity 1
+- Deteksi maksimal 2 tangan
+- Smoothing untuk gerakan yang lebih halus
+- Confidence threshold: 0.7
+
+### Arpeggiator
+- Major pentatonic scale
+- 3 octave range
+- ADSR envelope synthesis
+- Real-time pitch dan volume control
+- BPM: 120 (16th notes)
+
+### Drum Machine
+- 4 drum sounds: kick, snare, hihat, clap
+- 5 pre-programmed patterns
+- Individual volume control untuk setiap drum
+- Step sequencer: 16 steps
+- Real-time pattern switching
+
+### Visualizer
+- Audio reactive particle system
+- Step sequencer visualization
+- Hand position indicators
+- Volume meters
+- FPS counter
+- Split screen untuk left/right hand
+
+## Technical Details
+
+- **Video Resolution**: 1280x720
+- **Target FPS**: 60
+- **Audio Sample Rate**: 44100 Hz
+- **Audio Buffer**: 1024 samples
+- **Pygame Mixer**: Stereo, 16-bit
+
+## Troubleshooting
+
+### Camera tidak terdeteksi
+- Pastikan webcam terhubung dengan benar
+- Check camera permissions di sistem operasi
+- Coba ubah camera index di `main.py`: `cv2.VideoCapture(1)` or `cv2.VideoCapture(2)`
+
+### Audio tidak terdengar
+- Check volume sistem
+- Pastikan file audio ada di folder `assets/`
+- Jalankan `test_drums.py` untuk test audio loading
+
+### Performa rendah
+- Turunkan resolusi camera di `main.py`
+- Gunakan model_complexity=0 di `hand_tracker.py`
+- Close aplikasi lain yang menggunakan camera/CPU
 
 ## License
 
@@ -45,36 +144,11 @@ MIT License
 
 ## Credits
 
-- Three.js - https://threejs.org/
-- MediaPipe - https://mediapipe.dev/
-- Rosebud AI - https://rosebud.ai/
-- Tone.js - https://tonejs.github.io/
-
-## Related Projects
-
-I've released several computer vision projects (with code + tutorials) here:
-[Fun With Computer Vision](https://www.funwithcomputervision.com/)
-
-You can purchase lifetime access and receive the full project files and tutorials. I'm adding more content regularly 🪬
-
-You might also like some of my other open source projects:
-
-- [3D Model Playground](https://collidingScopes.github.io/3d-model-playground) - control 3D models with voice and hand gestures
-- [Threejs hand tracking tutorial](https://collidingScopes.github.io/threejs-handtracking-101) - Basic hand tracking setup with threejs and MediaPipe computer vision
-- [Particular Drift](https://collidingScopes.github.io/particular-drift) - Turn photos into flowing particle animations
-- [Video-to-ASCII](https://collidingScopes.github.io/ascii) - Convert videos into ASCII pixel art
+- **MediaPipe** - Hand tracking
+- **Pygame** - Audio playback
+- **OpenCV** - Computer vision
+- **NumPy** - Numerical operations
 
 ## Contact
 
-- Instagram: [@stereo.drift](https://www.instagram.com/stereo.drift/)
-- Twitter/X: [@measure_plan](https://x.com/measure_plan)
-- Email: [stereodriftvisuals@gmail.com](mailto:stereodriftvisuals@gmail.com)
-- GitHub: [collidingScopes](https://github.com/collidingScopes)
-
-## Donations
-
-If you found this tool useful, feel free to buy me a coffee. 
-
-My name is Alan, and I enjoy building open source software for computer vision, games, and more. This would be much appreciated during late-night coding sessions!
-
-[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/stereoDrift)
+Untuk pertanyaan dan feedback, silakan buat issue di repository ini.
