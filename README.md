@@ -9,6 +9,29 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna memainkan 
 
 ---
 
+## 🚀 Quick Start
+
+### Instalasi
+
+1. Clone repository ini
+2. Install dependencies: `pip install -r requirements.txt`
+3. Download model [shape_predictor_68_face_landmarks.dat](http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2)
+4. Extract dan letakkan file `.dat` di root directory
+
+### Menjalankan
+
+```bash
+# Real-time detection (requires webcam)
+python detect-tongue-real-time-v4.py
+
+# Image analysis
+python facial_landmarks.py -i path/to/image.jpg
+```
+
+**Lihat [SETUP.md](SETUP.md) untuk panduan instalasi lengkap dan troubleshooting.**
+
+---
+
 ## 👨‍💻 Anggota Tim
 
 | Nama Lengkap | NIM | ID GitHub |
