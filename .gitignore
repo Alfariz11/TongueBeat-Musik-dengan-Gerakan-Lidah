@@ -54,7 +54,11 @@ result/*.jpeg
 *.avi
 *.mp4
 output.avi
-
+video_analysis/*.jpg
+video_analysis/*.png
+video_analysis/*.jpeg
+video_analysis/*.mp4
+video_analysis/*.avi
 # Keep .gitkeep files
 !.gitkeep
 

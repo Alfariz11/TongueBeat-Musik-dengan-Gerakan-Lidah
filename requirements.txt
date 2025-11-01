@@ -3,7 +3,8 @@
 
 # Computer vision and face detection
 opencv-contrib-python==4.8.1.78
-dlib==19.24.2
+mediapipe==0.10.14
+dlib
 imutils==0.5.4
 
 # Scientific computing
