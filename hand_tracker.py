@@ -1,7 +1,3 @@
-"""
-Hand Tracking Module using MediaPipe
-Detects and tracks hands for controlling music
-"""
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -17,20 +13,18 @@ class HandTracker:
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_drawing_styles = mp.solutions.drawing_styles
 
-        # Initialize hands detection with better quality settings
         self.hands = self.mp_hands.Hands(
-            model_complexity=1,  # Higher quality model (0=lite, 1=full)
-            min_detection_confidence=0.7,  # Higher confidence for better accuracy
-            min_tracking_confidence=0.7,  # Higher tracking confidence for smoothness
+            model_complexity=1,
+            min_detection_confidence=0.7,
+            min_tracking_confidence=0.7,
             max_num_hands=2
         )
 
         self.results = None
         self.hand_data = {}
 
-        # Smoothing parameters
-        self.smoothing_factor = 0.3  # Lower = smoother but more lag
-        self.prev_hand_positions = {}  # Store previous positions for smoothing
+        self.smoothing_factor = 0.3
+        self.prev_hand_positions = {}
 
 <<<<<<< HEAD
         # ROI (Region of Interest) settings
@@ -93,27 +87,22 @@ class HandTracker:
 =======
 >>>>>>> 9178300 (new branch)
     def process_frame(self, frame):
-        """Process a frame and detect hands"""
-        # Convert BGR to RGB
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         rgb_frame.flags.writeable = False
 
-        # Process the frame
         self.results = self.hands.process(rgb_frame)
 
-        # Convert back to BGR for OpenCV
         rgb_frame.flags.writeable = True
 
-        # Update hand data
         self.hand_data = {}
 
         if self.results.multi_hand_landmarks:
             for idx, (hand_landmarks, handedness) in enumerate(
                 zip(self.results.multi_hand_landmarks, self.results.multi_handedness)
             ):
-                # Determine which hand (Left or Right)
                 hand_label = handedness.classification[0].label
 
+<<<<<<< HEAD
 <<<<<<< HEAD
                 # Check if hand is in ROI
                 in_roi = self.is_hand_in_roi(hand_landmarks, hand_label)
@@ -125,6 +114,8 @@ class HandTracker:
 =======
 >>>>>>> 9178300 (new branch)
                 # Store landmark data
+=======
+>>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)
                 self.hand_data[hand_label] = {
                     'landmarks': hand_landmarks,
                     'handedness': handedness,
@@ -238,7 +229,6 @@ class HandTracker:
 
 =======
     def draw_landmarks(self, frame):
-        """Draw hand landmarks on frame"""
         if self.results.multi_hand_landmarks:
             for hand_landmarks in self.results.multi_hand_landmarks:
 >>>>>>> 9178300 (new branch)
@@ -271,54 +261,43 @@ class HandTracker:
         return frame
 
     def _smooth_value(self, key, new_value):
-        """Apply exponential smoothing to a value"""
         if key not in self.prev_hand_positions:
             self.prev_hand_positions[key] = new_value
             return new_value
 
-        # Exponential smoothing: smoothed = alpha * new + (1 - alpha) * old
         smoothed = (self.smoothing_factor * new_value +
                    (1 - self.smoothing_factor) * self.prev_hand_positions[key])
         self.prev_hand_positions[key] = smoothed
         return smoothed
 
     def get_hand_height(self, hand_label):
-        """Get normalized hand height (0-1, where 1 is top of screen)"""
         if hand_label in self.hand_data:
-            # Invert Y since MediaPipe Y is from top to bottom
             raw_height = 1.0 - self.hand_data[hand_label]['wrist_y']
-            # Apply smoothing
             return self._smooth_value(f'{hand_label}_height', raw_height)
         return 0.5
 
     def get_pinch_distance(self, hand_label):
-        """Calculate distance between thumb and index finger (for volume control)"""
         if hand_label in self.hand_data:
             thumb = self.hand_data[hand_label]['thumb_tip']
             index = self.hand_data[hand_label]['index_tip']
 
-            # Calculate Euclidean distance
             distance = np.sqrt(
                 (thumb.x - index.x)**2 +
                 (thumb.y - index.y)**2 +
                 (thumb.z - index.z)**2
             )
-            # Apply smoothing
             return self._smooth_value(f'{hand_label}_pinch', distance)
         return 0.1
 
     def get_fingers_extended(self, hand_label):
-        """Check which fingers are extended (for drum pattern control)"""
         if hand_label not in self.hand_data:
             return [False, False, False, False, False]
 
         hand = self.hand_data[hand_label]
         landmarks = hand['landmarks'].landmark
 
-        # Thumb: compare tip to MCP joint
         thumb_extended = landmarks[4].x < landmarks[3].x if hand_label == "Right" else landmarks[4].x > landmarks[3].x
 
-        # Other fingers: compare tip Y to PIP joint Y
         index_extended = landmarks[8].y < landmarks[6].y
         middle_extended = landmarks[12].y < landmarks[10].y
         ring_extended = landmarks[16].y < landmarks[14].y
@@ -327,5 +306,4 @@ class HandTracker:
         return [thumb_extended, index_extended, middle_extended, ring_extended, pinky_extended]
 
     def release(self):
-        """Release resources"""
         self.hands.close()

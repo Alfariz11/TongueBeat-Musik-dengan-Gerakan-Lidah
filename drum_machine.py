@@ -1,30 +1,41 @@
-"""
-Drum Machine Controller
-Hand #2 controls the drums (raise different fingers to change the pattern)
-"""
 import pygame
+<<<<<<< HEAD
 <<<<<<< HEAD
 import os
 =======
 import numpy as np
 import array
 >>>>>>> 9178300 (new branch)
+=======
+import os
+>>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)
 
 
 class DrumMachine:
     def __init__(self):
-        # Larger buffer for smoother playback (but slightly more latency)
         pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         # Drum samples (loaded from assets folder)
 =======
         # Drum samples (we'll generate them synthetically)
 >>>>>>> 9178300 (new branch)
+=======
+        self.finger_to_drum = [
+            'kick',
+            'snare',
+            'hihat',
+            'hightom',
+            'crashcymbal'
+        ]
+
+>>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)
         self.drum_sounds = {
             'kick': None,
             'snare': None,
             'hihat': None,
+<<<<<<< HEAD
             'clap': None,
 <<<<<<< HEAD
         }
@@ -46,13 +57,80 @@ class DrumMachine:
         # Generate synthetic drum sounds
         self._generate_drum_sounds()
 >>>>>>> 9178300 (new branch)
+=======
+            'hightom': None,
+            'crashcymbal': None,
+        }
 
-        # Timing
-        self.bpm = 120
-        self.step_duration = 60.0 / self.bpm / 4  # 16th notes
+        self.drum_volumes = {
+            'kick': 0.85,
+            'snare': 0.75,
+            'hihat': 0.45,
+            'hightom': 0.55,
+            'crashcymbal': 0.65,
+        }
+>>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)
+
+        self.drum_patterns = {
+            'kick': {
+                0: 1.0,
+                4: 0.9,
+                7: 0.6,
+                8: 0.85,
+                10: 0.5,
+                12: 0.95,
+            },
+            'snare': {
+                4: 1.0,
+                12: 1.0,
+                2: 0.3,
+                6: 0.35,
+                10: 0.4,
+                14: 0.3,
+            },
+            'hihat': {
+                0: 0.6,
+                2: 0.4,
+                4: 0.5,
+                6: 0.4,
+                8: 0.55,
+                10: 0.4,
+                12: 0.5,
+                14: 0.4,
+                1: 0.25,
+                3: 0.25,
+                5: 0.25,
+                7: 0.25,
+                9: 0.25,
+                11: 0.25,
+                13: 0.25,
+                15: 0.25,
+            },
+            'hightom': {
+                1: 0.7,
+                5: 0.6,
+                9: 0.65,
+                13: 0.75,
+                3: 0.4,
+                7: 0.45,
+                11: 0.5,
+                15: 0.8,
+            },
+            'crashcymbal': {
+                0: 1.0,
+                8: 0.85,
+            },
+        }
+
+        self.active_fingers = [False] * 5
+
+        self.bpm = 125
+        self.swing_amount = 0.05
+        self.step_duration_base = 60.0 / self.bpm / 4
         self.last_step_time = 0
         self.current_step = 0
 
+<<<<<<< HEAD
         # Drum patterns (16 steps each)
         # Each pattern is a dict of drum: [steps where it plays]
         self.patterns = {
@@ -92,11 +170,37 @@ class DrumMachine:
                 'snare': [4, 12],
                 'hihat': [0, 4, 8, 12],
             }
+=======
+        self.recent_played = []
+
+        self._load_drum_sounds()
+
+    def _load_drum_sounds(self):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        audios_dir = os.path.join(current_dir, 'audios')
+
+        sound_files = {
+            'kick': 'kick.wav',
+            'snare': 'snare.wav',
+            'hihat': 'hihat.wav',
+            'hightom': 'hightom.wav',
+            'crashcymbal': 'crashcymbal.wav',
+>>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)
         }
 
-        self.current_pattern_name = 'pattern1'
-        self.current_pattern = self.patterns['pattern1']
+        for drum_name, filename in sound_files.items():
+            filepath = os.path.join(audios_dir, filename)
+            try:
+                if os.path.exists(filepath):
+                    sound = pygame.mixer.Sound(filepath)
+                    sound.set_volume(self.drum_volumes[drum_name])
+                    self.drum_sounds[drum_name] = sound
+                else:
+                    self.drum_sounds[drum_name] = None
+            except Exception:
+                self.drum_sounds[drum_name] = None
 
+<<<<<<< HEAD
         # Finger pattern mapping
         self.finger_patterns = {
             (False, False, False, False, False): 'pattern1',  # No fingers
@@ -219,62 +323,103 @@ class DrumMachine:
             tom_buffer.append(val)
         self.drum_sounds['tom'] = pygame.mixer.Sound(buffer=tom_buffer)
 >>>>>>> 9178300 (new branch)
+=======
+    def _get_step_duration(self, step):
+        if step % 2 == 1:
+            return self.step_duration_base * (1.0 + self.swing_amount)
+        else:
+            return self.step_duration_base * (1.0 - self.swing_amount)
+>>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)
 
     def update(self, fingers_extended, current_time):
-        """Update drum machine based on finger positions
+        self.active_fingers = fingers_extended.copy()
 
-        Args:
-            fingers_extended: List of 5 booleans for each finger
-            current_time: Current time in seconds
-        """
-        # Select pattern based on fingers
-        fingers_tuple = tuple(fingers_extended)
+        active_drums = []
+        for finger_idx, is_active in enumerate(self.active_fingers):
+            if is_active:
+                drum_name = self.finger_to_drum[finger_idx]
+                active_drums.append(drum_name)
 
-        # Find the best matching pattern
-        if fingers_tuple in self.finger_patterns:
-            new_pattern = self.finger_patterns[fingers_tuple]
-            if new_pattern != self.current_pattern_name:
-                self.current_pattern_name = new_pattern
-                self.current_pattern = self.patterns[new_pattern]
-
-        # Check if it's time for the next step
-        if current_time - self.last_step_time >= self.step_duration:
+        played_drums = []
+        
+        step_duration = self._get_step_duration(self.current_step)
+        
+        if current_time - self.last_step_time >= step_duration:
             self.last_step_time = current_time
+            
+            for drum_name in active_drums:
+                if drum_name in self.drum_patterns:
+                    pattern = self.drum_patterns[drum_name]
+                    if self.current_step in pattern:
+                        velocity = pattern[self.current_step]
+                        
+                        if self.drum_sounds[drum_name]:
+                            actual_volume = self.drum_volumes[drum_name] * velocity
+                            self.drum_sounds[drum_name].set_volume(actual_volume)
+                            self.drum_sounds[drum_name].play()
+                            self.drum_sounds[drum_name].set_volume(self.drum_volumes[drum_name])
+                            
+                            played_drums.append({
+                                'drum': drum_name,
+                                'velocity': velocity,
+                                'volume': actual_volume
+                            })
 
-            # Play drums for current step
-            played_drums = []
-            for drum_name, steps in self.current_pattern.items():
-                if self.current_step in steps:
-                    if self.drum_sounds[drum_name]:
-                        self.drum_sounds[drum_name].play()
-                        played_drums.append(drum_name)
+            if played_drums:
+                self.recent_played = played_drums.copy()
 
-            # Move to next step
             self.current_step = (self.current_step + 1) % 16
 
-            return {
-                'step': self.current_step,
-                'pattern': self.current_pattern_name,
-                'played': played_drums
-            }
+        active_patterns = {}
+        pattern_steps_flat = {}
+        for drum_name in active_drums:
+            if drum_name in self.drum_patterns:
+                pattern = self.drum_patterns[drum_name]
+                active_patterns[drum_name] = pattern
+                pattern_steps_flat[drum_name] = list(pattern.keys())
 
-        return None
+        return {
+            'step': self.current_step,
+            'played': [d['drum'] for d in played_drums] if played_drums else [],
+            'played_details': played_drums,
+            'active_drums': active_drums,
+            'active_patterns': active_patterns,
+            'active_patterns_flat': pattern_steps_flat,
+            'fingers_extended': fingers_extended,
+            'bpm': self.bpm
+        }
 
     def set_bpm(self, bpm):
-        """Set the tempo"""
         self.bpm = bpm
-        self.step_duration = 60.0 / self.bpm / 4
+        self.step_duration_base = 60.0 / self.bpm / 4
 
+<<<<<<< HEAD
 <<<<<<< HEAD
     def set_drum_volume(self, drum_name, volume):
         """Set volume for a specific drum (0.0 to 1.0)"""
+=======
+    def set_swing(self, swing_amount):
+        self.swing_amount = max(0.0, min(0.2, swing_amount))
+
+    def set_drum_volume(self, drum_name, volume):
+>>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)
         if drum_name in self.drum_volumes:
             self.drum_volumes[drum_name] = max(0.0, min(1.0, volume))
             if self.drum_sounds[drum_name]:
                 self.drum_sounds[drum_name].set_volume(self.drum_volumes[drum_name])
 
+<<<<<<< HEAD
 =======
 >>>>>>> 9178300 (new branch)
     def get_pattern_name(self):
         """Get current pattern name"""
         return self.current_pattern_name
+=======
+    def get_drum_name_for_finger(self, finger_idx):
+        if 0 <= finger_idx < len(self.finger_to_drum):
+            return self.finger_to_drum[finger_idx]
+        return None
+
+    def get_pattern_for_drum(self, drum_name):
+        return self.drum_patterns.get(drum_name, {})
+>>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)

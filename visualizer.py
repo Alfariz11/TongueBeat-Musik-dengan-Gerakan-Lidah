@@ -1,7 +1,3 @@
-"""
-Audio Reactive Visualizer
-Creates visual feedback for the music generation
-"""
 import cv2
 import numpy as np
 from collections import deque
@@ -12,28 +8,22 @@ class Visualizer:
         self.width = width
         self.height = height
 
-        # Visual parameters
         self.bg_color = (20, 20, 30)
         self.arp_color = (100, 200, 255)
         self.drum_color = (255, 100, 150)
 
-        # History for waveform effect
         self.arp_history = deque(maxlen=100)
         self.drum_history = deque(maxlen=16)
 
-        # Particle system for visual effects
         self.particles = []
 
     def draw_background(self, frame):
-        """Draw background with gradient"""
         frame[:] = self.bg_color
         return frame
 
     def draw_hand_zones(self, frame, hand_data):
-        """Draw visual zones for each hand"""
         h, w = frame.shape[:2]
 
-        # Draw left side for Hand #1 (Arpeggiator)
         cv2.rectangle(frame, (0, 0), (w//2, h), (40, 40, 60), -1)
         cv2.putText(frame, "HAND #1: ARPEGGIATOR", (20, 40),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (150, 150, 200), 2)
@@ -42,17 +32,15 @@ class Visualizer:
         cv2.putText(frame, "Pinch = Volume control", (20, 95),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (120, 120, 150), 1)
 
-        # Draw right side for Hand #2 (Drums)
         cv2.rectangle(frame, (w//2, 0), (w, h), (60, 40, 40), -1)
         cv2.putText(frame, "HAND #2: DRUMS", (w//2 + 20, 40),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (200, 150, 150), 2)
-        cv2.putText(frame, "Raise fingers = Change pattern", (w//2 + 20, 70),
+        cv2.putText(frame, "Each finger = One instrument", (w//2 + 20, 70),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 120, 120), 1)
 
         return frame
 
     def draw_arpeggiator_visualization(self, frame, arp_data, hand_height, volume):
-        """Draw visualization for arpeggiator"""
         h, w = frame.shape[:2]
 
         if arp_data:
@@ -62,30 +50,25 @@ class Visualizer:
                 'octave': arp_data['octave']
             })
 
-            # Create particle effect
             x = w // 4
             y = int(h * (1 - hand_height))
             self.create_particles(x, y, self.arp_color, int(volume * 20))
 
-        # Draw waveform history
         if len(self.arp_history) > 1:
             points = []
             for i, data in enumerate(self.arp_history):
                 x = int((w // 2) * (i / len(self.arp_history)))
-                note_normalized = (data['note'] - 57) / 24  # Normalize note range
+                note_normalized = (data['note'] - 57) / 24
                 y = int(h - (h * note_normalized * 0.5) - 100)
                 points.append((x, y))
 
-            # Draw smooth curve
             if len(points) > 2:
                 points_array = np.array(points, dtype=np.int32)
                 cv2.polylines(frame, [points_array], False, self.arp_color, 3)
 
-        # Draw hand height indicator
         hand_y = int(h * (1 - hand_height))
         cv2.line(frame, (10, hand_y), (w//2 - 10, hand_y), (100, 255, 100), 2)
 
-        # Draw volume meter
         volume_height = int(volume * 150)
         cv2.rectangle(frame, (w//2 - 60, h - 50),
                      (w//2 - 40, h - 50 - volume_height), (100, 255, 255), -1)
@@ -95,56 +78,148 @@ class Visualizer:
         return frame
 
     def draw_drum_visualization(self, frame, drum_data, fingers_extended):
-        """Draw visualization for drum machine"""
         h, w = frame.shape[:2]
 
-        if drum_data and drum_data['played']:
-            self.drum_history.append(drum_data['step'])
+        finger_to_instrument = [
+            'Kick',
+            'Snare',
+            'Hihat',
+            'High Tom',
+            'Crash'
+        ]
+        
+        instrument_colors = {
+            'kick': (100, 150, 255),
+            'snare': (255, 150, 100),
+            'hihat': (150, 255, 150),
+            'hightom': (255, 200, 100),
+            'crashcymbal': (255, 100, 255)
+        }
 
-            # Create particles for each drum hit
-            for drum in drum_data['played']:
+        if drum_data and drum_data.get('played_details'):
+            for drum_detail in drum_data['played_details']:
+                drum = drum_detail['drum']
+                velocity = drum_detail.get('velocity', 1.0)
                 x = w * 3 // 4
                 y = h // 2
-                self.create_particles(x, y, self.drum_color, 15)
+                color = instrument_colors.get(drum, self.drum_color)
+                particle_count = int(10 + velocity * 20)
+                self.create_particles(x, y, color, particle_count)
 
-        # Draw step sequencer
-        step_width = (w // 2 - 40) // 16
-        current_step = drum_data['step'] if drum_data else 0
+        step_width = (w // 2 - 60) // 16
+        current_step = drum_data.get('step', 0) if drum_data else 0
+        start_x = w//2 + 30
+        start_y = h - 220
 
         for i in range(16):
-            x = w//2 + 20 + (i * step_width)
-            y = h - 150
-
-            # Highlight current step
+            x = start_x + (i * step_width)
+            y = start_y
+            
+            is_beat = (i % 4 == 0)
+            
             if i == current_step:
                 color = (255, 255, 100)
-                cv2.rectangle(frame, (x, y), (x + step_width - 2, y + 30), color, -1)
-            elif i in self.drum_history:
-                color = (150, 100, 100)
-                cv2.rectangle(frame, (x, y), (x + step_width - 2, y + 30), color, -1)
+                cv2.rectangle(frame, (x, y), (x + step_width - 2, y + 35), color, -1)
+                cv2.circle(frame, (x + step_width // 2, y + 17), step_width // 2 + 3, color, 2)
             else:
-                color = (60, 60, 80)
-                cv2.rectangle(frame, (x, y), (x + step_width - 2, y + 30), color, 1)
+                if is_beat:
+                    color = (80, 80, 100)
+                else:
+                    color = (60, 60, 80)
+                cv2.rectangle(frame, (x, y), (x + step_width - 2, y + 35), color, 1)
 
-        # Draw finger status
+            text_color = (255, 255, 255) if i == current_step else (200, 200, 200)
+            cv2.putText(frame, str(i), (x + 3, y + 22),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.35, text_color, 1)
+            
+            if is_beat:
+                cv2.circle(frame, (x + step_width // 2, y - 5), 3, (255, 200, 100), -1)
+
         finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
+        pattern_y_offset = 100
+        drum_name_map = ['kick', 'snare', 'hihat', 'hightom', 'crashcymbal']
+        
+        active_patterns = drum_data.get('active_patterns', {}) if drum_data else {}
+        
+        pattern_row = 0
         for i, (name, extended) in enumerate(zip(finger_names, fingers_extended)):
-            x = w//2 + 20
-            y = h - 100 + (i * 20)
-            color = (100, 255, 100) if extended else (100, 100, 100)
-            cv2.putText(frame, f"{name}: {'UP' if extended else 'DOWN'}",
-                       (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+            if extended:
+                instrument = finger_to_instrument[i]
+                drum_name = drum_name_map[i]
+                inst_color = instrument_colors.get(drum_name, (100, 255, 100))
+                
+                y = start_y + pattern_y_offset - (pattern_row * 20)
+                
+                cv2.rectangle(frame, (start_x - 5, y - 12), (start_x + 140, y + 3), 
+                            (inst_color[0] // 3, inst_color[1] // 3, inst_color[2] // 3), -1)
+                
+                cv2.putText(frame, f"{name:6} ({instrument:10}):",
+                           (start_x, y),
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.4, inst_color, 1)
+                
+                pattern = active_patterns.get(drum_name, {})
+                
+                for step, velocity in pattern.items():
+                    step_x = start_x + 150 + (step * (step_width // 2))
+                    
+                    bar_height = int(8 + velocity * 12)
+                    bar_y = y - bar_height - 2
+                    
+                    if step == current_step:
+                        dot_color = (255, 255, 100)
+                        bar_color = (255, 255, 150)
+                    else:
+                        dot_color = tuple(min(255, int(c * (0.5 + velocity * 0.5))) 
+                                        for c in inst_color)
+                        bar_color = tuple(min(255, int(c * (0.4 + velocity * 0.4))) 
+                                        for c in inst_color)
+                    
+                    cv2.rectangle(frame, 
+                                (step_x - 2, bar_y), 
+                                (step_x + 1, y - 2),
+                                bar_color, -1)
+                    
+                    cv2.circle(frame, (step_x, y - 5), 3, dot_color, -1)
+                    
+                    if velocity > 0.7:
+                        cv2.putText(frame, f"{velocity:.1f}", 
+                                  (step_x - 5, bar_y - 3),
+                                  cv2.FONT_HERSHEY_SIMPLEX, 0.2, (255, 255, 255), 1)
+                
+                pattern_row += 1
 
-        # Draw pattern name
-        if drum_data:
-            cv2.putText(frame, f"Pattern: {drum_data['pattern']}",
-                       (w//2 + 20, h - 180),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 200, 200), 2)
+        active_count = sum(fingers_extended)
+        bpm = drum_data.get('bpm', 120) if drum_data else 120
+        
+        info_y = h - 55
+        cv2.rectangle(frame, (start_x - 5, info_y), (start_x + 400, h - 5), 
+                     (30, 30, 40), -1)
+        cv2.rectangle(frame, (start_x - 5, info_y), (start_x + 400, h - 5), 
+                     (100, 100, 120), 1)
+        
+        if active_count > 0:
+            status_text = f"Active: {active_count} pattern(s)"
+            cv2.putText(frame, status_text,
+                       (start_x, h - 35),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 200, 200), 1)
+        
+        bpm_text = f"BPM: {bpm}"
+        cv2.putText(frame, bpm_text,
+                   (start_x + 180, h - 35),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 255, 200), 1)
+        
+        step_text = f"Step: {current_step}/15"
+        cv2.putText(frame, step_text,
+                   (start_x + 260, h - 35),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 255), 1)
+
+        cv2.putText(frame, "Enhanced Step Sequencer (Velocity Visualization):",
+                   (start_x, start_y - 25),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (220, 220, 220), 1)
 
         return frame
 
     def create_particles(self, x, y, color, count):
-        """Create particle effects"""
         for _ in range(count):
             particle = {
                 'x': x,
@@ -157,22 +232,17 @@ class Visualizer:
             self.particles.append(particle)
 
     def update_particles(self, frame):
-        """Update and draw particles"""
         particles_to_remove = []
 
         for particle in self.particles:
-            # Update position
             particle['x'] += particle['vx']
             particle['y'] += particle['vy']
 
-            # Update velocity (gravity and friction)
             particle['vy'] += 0.3
             particle['vx'] *= 0.98
 
-            # Update life
             particle['life'] -= 0.02
 
-            # Draw particle
             if particle['life'] > 0:
                 alpha = particle['life']
                 color = tuple(int(c * alpha) for c in particle['color'])
@@ -182,14 +252,12 @@ class Visualizer:
             else:
                 particles_to_remove.append(particle)
 
-        # Remove dead particles
         for particle in particles_to_remove:
             self.particles.remove(particle)
 
         return frame
 
     def draw_info(self, frame, fps):
-        """Draw FPS and other info"""
         cv2.putText(frame, f"FPS: {fps:.1f}", (self.width - 150, 30),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
@@ -200,30 +268,22 @@ class Visualizer:
 
     def render(self, camera_frame, hand_data, arp_data, drum_data,
                hand_height_left, volume, fingers_extended_right, fps):
-        """Main render function"""
-        # Create visualization canvas
         vis_frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
 
-        # Draw background and zones
         vis_frame = self.draw_background(vis_frame)
         vis_frame = self.draw_hand_zones(vis_frame, hand_data)
 
-        # Draw arpeggiator visualization
         vis_frame = self.draw_arpeggiator_visualization(vis_frame, arp_data,
                                                          hand_height_left, volume)
 
-        # Draw drum visualization
         vis_frame = self.draw_drum_visualization(vis_frame, drum_data,
                                                   fingers_extended_right)
 
-        # Update and draw particles
         vis_frame = self.update_particles(vis_frame)
 
-        # Draw camera feed (small corner)
         camera_small = cv2.resize(camera_frame, (320, 240))
         vis_frame[self.height-260:self.height-20, 20:340] = camera_small
 
-        # Draw info
         vis_frame = self.draw_info(vis_frame, fps)
 
         return vis_frame
