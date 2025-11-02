@@ -280,6 +280,43 @@ class HandTracker:
             # Apply smoothing
             return self._smooth_value(f'{hand_label}_pinch', distance)
         return 0.1
+    
+    def get_rotation_angle(self, hand_label):
+        """
+        Deteksi rotasi tangan seperti memutar knob menggunakan jempol dan telunjuk.
+        Menghasilkan delta rotasi (dalam derajat) antara frame saat ini dan sebelumnya.
+        Nilai positif = searah jarum jam, negatif = berlawanan arah.
+        """
+        if hand_label not in self.hand_data:
+            return 0.0
+
+        thumb = self.hand_data[hand_label]['thumb_tip']
+        index = self.hand_data[hand_label]['index_tip']
+
+        # Hitung vektor jempol -> telunjuk
+        dx = index.x - thumb.x
+        dy = index.y - thumb.y
+        angle = np.degrees(np.arctan2(dy, dx))
+
+        # Ambil sudut sebelumnya
+        key = f"{hand_label}_rotation_angle"
+        prev_angle = self.prev_hand_positions.get(key, angle)
+
+        # Hitung delta dan koreksi wrap-around (-180 sampai 180)
+        delta = angle - prev_angle
+        if delta > 180:
+            delta -= 360
+        elif delta < -180:
+            delta += 360
+
+        # Simpan sudut untuk frame berikutnya
+        self.prev_hand_positions[key] = angle
+
+        # Terapkan smoothing agar stabil
+        delta_smoothed = self._smooth_value(f"{hand_label}_rot_delta", delta)
+        return delta_smoothed
+
+
 
     def get_fingers_extended(self, hand_label):
         """Check which fingers are extended (for drum pattern control)"""

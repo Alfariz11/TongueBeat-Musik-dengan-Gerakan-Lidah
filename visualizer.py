@@ -24,6 +24,10 @@ class Visualizer:
         # Particle system for visual effects
         self.particles = []
 
+    def get_current_bpm(self):
+        """Ambil nilai BPM dari modul DrumMachine (akan diisi saat render)"""
+        return getattr(self, "_current_bpm", 120)
+
     def draw_background(self, frame):
         """Draw background with gradient"""
         frame[:] = self.bg_color
@@ -57,10 +61,10 @@ class Visualizer:
 
         if arp_data:
             self.arp_history.append({
-                'note': arp_data['note'],
-                'volume': arp_data['volume'],
-                'octave': arp_data['octave']
-            })
+            'note': arp_data.get('note', 60),
+            'volume': arp_data.get('volume', 0.5),
+            'octave': arp_data.get('octave', 0)
+        })
 
             # Create particle effect
             x = w // 4
@@ -188,18 +192,25 @@ class Visualizer:
 
         return frame
 
-    def draw_info(self, frame, fps):
-        """Draw FPS and other info"""
+    def draw_info(self, frame, fps, bpm):
+        """Draw FPS, BPM, and quit info"""
+        # FPS di pojok kanan atas
         cv2.putText(frame, f"FPS: {fps:.1f}", (self.width - 150, 30),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
-        cv2.putText(frame, "Press 'Q' to quit", (self.width - 200, self.height - 20),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+        # BPM tepat di bawah FPS
+        cv2.putText(frame, f"BPM: {bpm}", (self.width - 150, 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 255, 255), 2)
+
+        # Instruksi quit
+        cv2.putText(frame, "Press 'Q' to quit", (self.width - 220, self.height - 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
 
         return frame
 
+
     def render(self, camera_frame, hand_data, arp_data, drum_data,
-               hand_height_left, volume, fingers_extended_right, fps):
+               hand_height_left, volume, fingers_extended_right, fps, bpm):
         """Main render function"""
         # Create visualization canvas
         vis_frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
@@ -224,6 +235,6 @@ class Visualizer:
         vis_frame[self.height-260:self.height-20, 20:340] = camera_small
 
         # Draw info
-        vis_frame = self.draw_info(vis_frame, fps)
+        vis_frame = self.draw_info(vis_frame, fps, bpm)
 
         return vis_frame
