@@ -1,154 +1,114 @@
-# MusikBeat - Hand-Controlled Music Generator
+# 🥁 "Gestune: Musik dari gerakan tangan"
 
-Hand-controlled music generator menggunakan computer vision untuk kontrol arpeggiator dan drum machine secara real-time.
+---
 
-## Features
+## 🎶 Deskripsi Proyek
 
-- **Hand Tracking**: Menggunakan MediaPipe untuk deteksi tangan secara real-time
-- **Arpeggiator**: Kontrol pitch dengan tinggi tangan dan volume dengan pinch gesture
-- **Drum Machine**: 5 drum patterns berbeda dengan kontrol jari
-- **Audio Reactive Visualizer**: Visualisasi interaktif dengan particle effects
-- **Professional Sound Quality**: Menggunakan audio samples dari assets folder
+Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilkan musik hanya dengan gerakan tangan secara real-time. Sistem ini memanfaatkan MediaPipe Hand Tracking untuk mendeteksi posisi dan gerakan tangan, yang kemudian digunakan untuk mengontrol dua elemen utama: Arpeggiator dan Drum Machine. Pada Arpeggiator, tinggi posisi tangan mengatur pitch nada, sementara gerakan pinch gesture mengatur volume suara. Sedangkan Drum Machine menyediakan lima pola ritme drum berbeda yang dapat diaktifkan melalui kombinasi gerakan jari. Selain itu, sistem dilengkapi dengan Audio Reactive Visualizer yang menampilkan efek partikel sesuai intensitas dan ritme musik.
 
-## Requirements
+---
 
-- Python 3.8+
-- Webcam untuk hand tracking
-- Dependencies (install via pip):
-  ```
-  pygame
-  opencv-python
-  mediapipe
-  numpy
-  ```
+## 👨‍💻 Anggota Tim
 
-## Installation
+| Nama Lengkap | NIM | ID GitHub |
+|---------------|-----|-----------|
+| A Edwin Krisandika Putra | 122140003 |[@aloisiusedwin]( https://github.com/aloisiusedwin) |
+| Fathan Andi Kartagama | 122140055 |[@pataanggs]( https://github.com/pataanggs) |
+| Rizki Alfariz Ramadhan | 122140061 | [@Alfariz11](https://github.com/Alfariz11) |
 
-1. Clone repository ini:
+---
+
+## 🚀 Instalasi
+
+### Prasyarat
+- Python 3.8 atau lebih tinggi
+- Webcam (untuk hand tracking)
+- Sistem Operasi: Windows, macOS, atau Linux
+
+### Langkah Instalasi
+
+1. **Clone repository**
    ```bash
-   git clone <repository-url>
-   cd MusikBeat
+   git clone https://github.com/username/TongueBeat-Musik-dengan-Gerakan-Lidah.git
+   cd TongueBeat-Musik-dengan-Gerakan-Lidah
    ```
 
-2. Install dependencies:
+2. **Buat virtual environment (disarankan)**
    ```bash
-   pip install pygame opencv-python mediapipe numpy
+   # Windows
+   python -m venv venv
+   venv\Scripts\activate
+
+   # macOS/Linux
+   python3 -m venv venv
+   source venv/bin/activate
    ```
 
-3. Pastikan folder `assets/` berisi file audio:
-   - kick.wav
-   - snare.wav
-   - hihat.wav
-   - clap.wav
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## Usage
+4. **Pastikan folder assets berisi file audio yang diperlukan**
+   - `assets/kick.wav`
+   - `assets/snare.wav`
+   - `assets/hihat.wav`
+   - `assets/clap.wav`
 
-Jalankan aplikasi:
+---
+
+## 📖 Penggunaan
+
+### Menjalankan Aplikasi
+
+1. **Jalankan aplikasi utama**
+   ```bash
+   python main.py
+   ```
+
+2. **Pastikan webcam Anda aktif dan terhubung**
+
+3. **Posisikan tangan Anda di depan webcam:**
+   - **Tangan Kiri**: Kontrol Arpeggiator
+   - **Tangan Kanan**: Kontrol Drum Machine
+
+### Kontrol Aplikasi
+
+#### Tangan Kiri (Arpeggiator)
+- **Naikkan/turunkan tangan**: Mengatur pitch nada (semakin tinggi tangan, semakin tinggi pitch)
+- **Gesture pinch (ibu jari + telunjuk)**: Mengatur volume suara
+
+#### Tangan Kanan (Drum Machine)
+- **Tidak ada jari terangkat**: Pattern 1 (Basic 4/4)
+- **Telunjuk**: Pattern 1 (Basic 4/4)
+- **Telunjuk + Tengah**: Pattern 2 (With clap)
+- **Telunjuk + Tengah + Manis**: Pattern 3 (Syncopated)
+- **Semua kecuali ibu jari**: Pattern 4 (Break beat)
+- **Semua jari**: Pattern 5 (Minimal)
+
+#### Keyboard Controls
+- **Q atau ESC**: Keluar dari aplikasi
+
+### Tips Penggunaan
+- Pastikan pencahayaan yang cukup agar hand tracking berfungsi optimal
+- Jaga jarak yang nyaman dengan webcam (sekitar 50-100 cm)
+- Pastikan kedua tangan terlihat jelas dalam frame kamera
+- Visualizer akan menampilkan efek partikel sesuai intensitas dan ritme musik
+
+### Testing Audio
+Untuk memverifikasi audio berfungsi dengan baik, jalankan:
 ```bash
-python main.py
+python test_drums.py
 ```
 
-### Controls
+---
 
-**Left Hand (Arpeggiator):**
-- Naikkan/turunkan tangan → Ubah pitch
-- Pinch (thumb + index finger) → Kontrol volume
+## 📅 Logbook Mingguan
 
-**Right Hand (Drums):**
-- No fingers → Pattern 1 (Basic 4/4)
-- Index finger → Pattern 1 (Basic 4/4)
-- Index + Middle → Pattern 2 (With clap)
-- Index + Middle + Ring → Pattern 3 (Syncopated)
-- All except thumb → Pattern 4 (Break beat)
-- All fingers → Pattern 5 (Minimal)
+| Tanggal | Kegiatan | Hasil / Progress |
+|---------|-----------|------------------|
+| 10/28/2025 | Pembuatan Repositori github Tugas Besar | Repositori github tugas besar berhasil dibuat dengan struktur awal proyek |
+| 11/2/2025 | Implementasi Komponen Utama & Integrasi Aplikasi | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (5 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen di main application. Perbaikan audio system dengan real audio samples, optimisasi code, dan dokumentasi lengkap |
 
-**Keyboard:**
-- Press `Q` or `ESC` to quit
 
-## Project Structure
-
-```
-MusikBeat/
-├── main.py              # Main application
-├── hand_tracker.py      # MediaPipe hand tracking
-├── arpeggiator.py       # Arpeggiator controller
-├── drum_machine.py      # Drum machine controller
-├── visualizer.py        # Audio reactive visualizer
-├── test_drums.py        # Test script untuk drum sounds
-├── assets/              # Audio files
-│   ├── kick.wav
-│   ├── snare.wav
-│   ├── hihat.wav
-│   └── clap.wav
-└── README.md
-```
-
-## Features Detail
-
-### Hand Tracking
-- Menggunakan MediaPipe Hands dengan model complexity 1
-- Deteksi maksimal 2 tangan
-- Smoothing untuk gerakan yang lebih halus
-- Confidence threshold: 0.7
-
-### Arpeggiator
-- Major pentatonic scale
-- 3 octave range
-- ADSR envelope synthesis
-- Real-time pitch dan volume control
-- BPM: 120 (16th notes)
-
-### Drum Machine
-- 4 drum sounds: kick, snare, hihat, clap
-- 5 pre-programmed patterns
-- Individual volume control untuk setiap drum
-- Step sequencer: 16 steps
-- Real-time pattern switching
-
-### Visualizer
-- Audio reactive particle system
-- Step sequencer visualization
-- Hand position indicators
-- Volume meters
-- FPS counter
-- Split screen untuk left/right hand
-
-## Technical Details
-
-- **Video Resolution**: 1280x720
-- **Target FPS**: 60
-- **Audio Sample Rate**: 44100 Hz
-- **Audio Buffer**: 1024 samples
-- **Pygame Mixer**: Stereo, 16-bit
-
-## Troubleshooting
-
-### Camera tidak terdeteksi
-- Pastikan webcam terhubung dengan benar
-- Check camera permissions di sistem operasi
-- Coba ubah camera index di `main.py`: `cv2.VideoCapture(1)` or `cv2.VideoCapture(2)`
-
-### Audio tidak terdengar
-- Check volume sistem
-- Pastikan file audio ada di folder `assets/`
-- Jalankan `test_drums.py` untuk test audio loading
-
-### Performa rendah
-- Turunkan resolusi camera di `main.py`
-- Gunakan model_complexity=0 di `hand_tracker.py`
-- Close aplikasi lain yang menggunakan camera/CPU
-
-## License
-
-MIT License
-
-## Credits
-
-- **MediaPipe** - Hand tracking
-- **Pygame** - Audio playback
-- **OpenCV** - Computer vision
-- **NumPy** - Numerical operations
-
-## Contact
-
-Untuk pertanyaan dan feedback, silakan buat issue di repository ini.
+---
