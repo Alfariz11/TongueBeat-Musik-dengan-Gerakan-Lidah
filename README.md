@@ -1,25 +1,49 @@
-# 🥁 TongueBeat — Musik dengan Gerakan Lidah
-*“Bermain drum tanpa tangan, hanya dengan gerakan lidah!”*
+# MusikBeat - Hand-Controlled Music Generator
 
----
+Hand-controlled music generator menggunakan computer vision untuk kontrol arpeggiator dan drum machine secara real-time.
 
-## 🎶 Deskripsi Proyek
+## Features
 
-Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna memainkan suara drum hanya dengan gerakan lidah. Kamera akan mendeteksi posisi dan pergerakan lidah, lalu menampilkan respon suara sesuai alat musik yang disentuh secara visual di layar.
+- **Hand Tracking**: Menggunakan MediaPipe untuk deteksi tangan secara real-time
+- **Arpeggiator**: Kontrol pitch dengan tinggi tangan dan volume dengan pinch gesture
+- **Drum Machine**: 5 drum patterns berbeda dengan kontrol jari
+- **Audio Reactive Visualizer**: Visualisasi interaktif dengan particle effects
+- **Professional Sound Quality**: Menggunakan audio samples dari assets folder
 
----
+## Requirements
 
-## 🚀 Quick Start
+- Python 3.8+
+- Webcam untuk hand tracking
+- Dependencies (install via pip):
+  ```
+  pygame
+  opencv-python
+  mediapipe
+  numpy
+  ```
 
-### Instalasi
+## Installation
 
-1. Clone repository ini
-2. Install dependencies: `pip install -r requirements.txt`
-3. Download model [shape_predictor_68_face_landmarks.dat](http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2)
-4. Extract dan letakkan file `.dat` di root directory
+1. Clone repository ini:
+   ```bash
+   git clone <repository-url>
+   cd MusikBeat
+   ```
 
-### Menjalankan
+2. Install dependencies:
+   ```bash
+   pip install pygame opencv-python mediapipe numpy
+   ```
 
+3. Pastikan folder `assets/` berisi file audio:
+   - kick.wav
+   - snare.wav
+   - hihat.wav
+   - clap.wav
+
+## Usage
+
+Jalankan aplikasi:
 ```bash
 # Real-time detection (requires webcam)
 python detect-tongue-real-time-v4.py

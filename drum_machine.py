@@ -30,56 +30,66 @@ class DrumMachine:
             'crashcymbal': 0.65,
         }
 
-        self.drum_patterns = {
-            'kick': {
-                0: 1.0,
-                4: 0.9,
-                7: 0.6,
-                8: 0.85,
-                10: 0.5,
-                12: 0.95,
+        self.pattern_sets = {
+            0: {
+                'kick': {
+                    0: 1.0, 4: 0.9, 7: 0.6, 8: 0.85, 10: 0.5, 12: 0.95,
+                },
+                'snare': {
+                    4: 1.0, 12: 1.0, 2: 0.3, 6: 0.35, 10: 0.4, 14: 0.3,
+                },
+                'hihat': {
+                    0: 0.6, 2: 0.4, 4: 0.5, 6: 0.4, 8: 0.55, 10: 0.4, 12: 0.5, 14: 0.4,
+                    1: 0.25, 3: 0.25, 5: 0.25, 7: 0.25, 9: 0.25, 11: 0.25, 13: 0.25, 15: 0.25,
+                },
+                'hightom': {
+                    1: 0.7, 5: 0.6, 9: 0.65, 13: 0.75, 3: 0.4, 7: 0.45, 11: 0.5, 15: 0.8,
+                },
+                'crashcymbal': {
+                    0: 1.0, 8: 0.85,
+                },
             },
-            'snare': {
-                4: 1.0,
-                12: 1.0,
-                2: 0.3,
-                6: 0.35,
-                10: 0.4,
-                14: 0.3,
+            1: {
+                'kick': {
+                    0: 1.0, 3: 0.7, 6: 0.8, 10: 0.75, 12: 0.9, 15: 0.6,
+                },
+                'snare': {
+                    4: 1.0, 8: 0.85, 12: 1.0, 1: 0.3, 5: 0.35, 9: 0.3, 13: 0.4,
+                },
+                'hihat': {
+                    0: 0.5, 1: 0.3, 2: 0.4, 3: 0.3, 4: 0.45, 5: 0.3, 6: 0.4, 7: 0.3,
+                    8: 0.5, 9: 0.3, 10: 0.4, 11: 0.3, 12: 0.45, 13: 0.3, 14: 0.4, 15: 0.3,
+                },
+                'hightom': {
+                    2: 0.65, 6: 0.7, 10: 0.6, 14: 0.75, 4: 0.5, 8: 0.55, 12: 0.6,
+                },
+                'crashcymbal': {
+                    0: 1.0, 4: 0.7, 8: 0.9, 12: 0.8,
+                },
             },
-            'hihat': {
-                0: 0.6,
-                2: 0.4,
-                4: 0.5,
-                6: 0.4,
-                8: 0.55,
-                10: 0.4,
-                12: 0.5,
-                14: 0.4,
-                1: 0.25,
-                3: 0.25,
-                5: 0.25,
-                7: 0.25,
-                9: 0.25,
-                11: 0.25,
-                13: 0.25,
-                15: 0.25,
-            },
-            'hightom': {
-                1: 0.7,
-                5: 0.6,
-                9: 0.65,
-                13: 0.75,
-                3: 0.4,
-                7: 0.45,
-                11: 0.5,
-                15: 0.8,
-            },
-            'crashcymbal': {
-                0: 1.0,
-                8: 0.85,
+            2: {
+                'kick': {
+                    0: 1.0, 2: 0.6, 4: 0.85, 6: 0.65, 8: 0.9, 11: 0.7, 12: 0.95, 14: 0.6,
+                },
+                'snare': {
+                    4: 1.0, 12: 1.0, 7: 0.5, 15: 0.45,
+                },
+                'hihat': {
+                    0: 0.55, 2: 0.35, 4: 0.45, 6: 0.35, 8: 0.5, 10: 0.35, 12: 0.45, 14: 0.35,
+                },
+                'hightom': {
+                    1: 0.8, 3: 0.65, 5: 0.7, 7: 0.75, 9: 0.65, 11: 0.7, 13: 0.8, 15: 0.85,
+                },
+                'crashcymbal': {
+                    0: 1.0,
+                },
             },
         }
+
+        self.current_pattern_set = 0
+        self.drum_patterns = self.pattern_sets[self.current_pattern_set]
+
+        self.prev_fist_state = {'Left': False, 'Right': False}
 
         self.active_fingers = [False] * 5
 
@@ -123,7 +133,18 @@ class DrumMachine:
         else:
             return self.step_duration_base * (1.0 - self.swing_amount)
 
-    def update(self, fingers_extended, current_time):
+    def change_pattern_set(self, pattern_set_index):
+        if pattern_set_index in self.pattern_sets:
+            self.current_pattern_set = pattern_set_index
+            self.drum_patterns = self.pattern_sets[self.current_pattern_set]
+            self.current_step = 0
+
+    def update(self, fingers_extended, current_time, is_fist=False):
+        if is_fist and not self.prev_fist_state.get('Right', False):
+            next_pattern = (self.current_pattern_set + 1) % len(self.pattern_sets)
+            self.change_pattern_set(next_pattern)
+        
+        self.prev_fist_state['Right'] = is_fist
         self.active_fingers = fingers_extended.copy()
 
         active_drums = []
@@ -178,7 +199,8 @@ class DrumMachine:
             'active_patterns': active_patterns,
             'active_patterns_flat': pattern_steps_flat,
             'fingers_extended': fingers_extended,
-            'bpm': self.bpm
+            'bpm': self.bpm,
+            'pattern_set': self.current_pattern_set
         }
 
     def set_bpm(self, bpm):
@@ -201,3 +223,4 @@ class DrumMachine:
 
     def get_pattern_for_drum(self, drum_name):
         return self.drum_patterns.get(drum_name, {})
+

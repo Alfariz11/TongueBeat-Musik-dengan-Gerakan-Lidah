@@ -45,9 +45,9 @@ class Visualizer:
 
         if arp_data:
             self.arp_history.append({
-                'note': arp_data['note'],
-                'volume': arp_data['volume'],
-                'octave': arp_data['octave']
+                'note': arp_data.get('note', 60),
+                'volume': arp_data.get('volume', 0.5),
+                'octave': arp_data.get('octave', 0)
             })
 
             x = w // 4
@@ -190,11 +190,12 @@ class Visualizer:
 
         active_count = sum(fingers_extended)
         bpm = drum_data.get('bpm', 120) if drum_data else 120
+        pattern_set = drum_data.get('pattern_set', 0) if drum_data else 0
         
         info_y = h - 55
-        cv2.rectangle(frame, (start_x - 5, info_y), (start_x + 400, h - 5), 
+        cv2.rectangle(frame, (start_x - 5, info_y), (start_x + 450, h - 5), 
                      (30, 30, 40), -1)
-        cv2.rectangle(frame, (start_x - 5, info_y), (start_x + 400, h - 5), 
+        cv2.rectangle(frame, (start_x - 5, info_y), (start_x + 450, h - 5), 
                      (100, 100, 120), 1)
         
         if active_count > 0:
@@ -212,6 +213,11 @@ class Visualizer:
         cv2.putText(frame, step_text,
                    (start_x + 260, h - 35),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 255), 1)
+
+        pattern_text = f"Pattern Set: {pattern_set + 1}"
+        cv2.putText(frame, pattern_text,
+                   (start_x, h - 15),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 150), 1)
 
         cv2.putText(frame, "Enhanced Step Sequencer (Velocity Visualization):",
                    (start_x, start_y - 25),
@@ -257,9 +263,12 @@ class Visualizer:
 
         return frame
 
-    def draw_info(self, frame, fps):
+    def draw_info(self, frame, fps, bpm):
         cv2.putText(frame, f"FPS: {fps:.1f}", (self.width - 150, 30),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+
+        cv2.putText(frame, f"BPM: {bpm}", (self.width - 150, 60),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 255, 255), 2)
 
         cv2.putText(frame, "Press 'Q' to quit", (self.width - 200, self.height - 20),
                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
@@ -267,7 +276,7 @@ class Visualizer:
         return frame
 
     def render(self, camera_frame, hand_data, arp_data, drum_data,
-               hand_height_left, volume, fingers_extended_right, fps):
+               hand_height_left, volume, fingers_extended_right, fps, bpm):
         vis_frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
 
         vis_frame = self.draw_background(vis_frame)
@@ -284,6 +293,8 @@ class Visualizer:
         camera_small = cv2.resize(camera_frame, (320, 240))
         vis_frame[self.height-260:self.height-20, 20:340] = camera_small
 
-        vis_frame = self.draw_info(vis_frame, fps)
+        vis_frame = self.draw_info(vis_frame, fps, bpm)
+
+        return vis_frame
 
         return vis_frame
