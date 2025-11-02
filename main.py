@@ -126,7 +126,8 @@ class MusicController:
             arp_data = self.arpeggiator.update(
                 self.hand_height_left,
                 pinch_distance,
-                current_time
+                current_time,
+                bpm=self.drum_machine.bpm
             )
 
             self.volume = self.arpeggiator.volume
@@ -138,6 +139,25 @@ class MusicController:
                 self.fingers_extended_right,
                 current_time
             )
+
+        # --- BPM Control via knob rotation (Right Hand + Pinch active) ---
+        rotation = self.hand_tracker.get_rotation_angle('Right')
+        # --- BPM control via vertical motion ---
+        pinch = self.hand_tracker.get_pinch_distance('Right')
+
+        # Kalau pinch aktif (tanda kamu "pegang" knob)
+        if pinch < 0.03:
+            hand_height_right = self.hand_tracker.get_hand_height('Right')
+
+            # Mapping tinggi tangan (0–1) ke BPM range (60–200)
+            new_bpm = int(60 + hand_height_right * (200 - 60))
+            new_bpm = np.clip(new_bpm, 60, 200)
+
+            if new_bpm != self.drum_machine.bpm:
+                self.drum_machine.set_bpm(new_bpm)
+                print(f"[BPM Control] Height={hand_height_right:.2f} → BPM={self.drum_machine.bpm}")
+
+        # Kalau pinch dilepas → kunci BPM (tidak berubah)
 
         return arp_data, drum_data
 
@@ -170,6 +190,12 @@ class MusicController:
 
                 arp_data, drum_data = self.process_hands(hand_data, current_time)
 
+<<<<<<< HEAD
+=======
+                # Render visualization
+                self.visualizer._current_bpm = self.drum_machine.bpm
+
+>>>>>>> db5b17e (fix: appregiator note & visual)
                 vis_frame = self.visualizer.render(
                     frame_with_hands,
                     hand_data,
@@ -178,9 +204,15 @@ class MusicController:
                     self.hand_height_left,
                     self.volume,
                     self.fingers_extended_right,
-                    self.fps
+                    self.fps,
+                    self.drum_machine.bpm  # <== tambahkan ini
                 )
 
+<<<<<<< HEAD
+=======
+
+                # Display
+>>>>>>> db5b17e (fix: appregiator note & visual)
                 cv2.imshow('Hand-Controlled Music Generator', vis_frame)
 
                 self.update_fps()

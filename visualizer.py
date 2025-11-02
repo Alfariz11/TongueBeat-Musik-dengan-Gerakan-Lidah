@@ -17,6 +17,10 @@ class Visualizer:
 
         self.particles = []
 
+    def get_current_bpm(self):
+        """Ambil nilai BPM dari modul DrumMachine (akan diisi saat render)"""
+        return getattr(self, "_current_bpm", 120)
+
     def draw_background(self, frame):
         frame[:] = self.bg_color
         return frame
@@ -45,10 +49,10 @@ class Visualizer:
 
         if arp_data:
             self.arp_history.append({
-                'note': arp_data['note'],
-                'volume': arp_data['volume'],
-                'octave': arp_data['octave']
-            })
+            'note': arp_data.get('note', 60),
+            'volume': arp_data.get('volume', 0.5),
+            'octave': arp_data.get('octave', 0)
+        })
 
             x = w // 4
             y = int(h * (1 - hand_height))
@@ -257,17 +261,35 @@ class Visualizer:
 
         return frame
 
+<<<<<<< HEAD
     def draw_info(self, frame, fps):
+=======
+    def draw_info(self, frame, fps, bpm):
+        """Draw FPS, BPM, and quit info"""
+        # FPS di pojok kanan atas
+>>>>>>> db5b17e (fix: appregiator note & visual)
         cv2.putText(frame, f"FPS: {fps:.1f}", (self.width - 150, 30),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
-        cv2.putText(frame, "Press 'Q' to quit", (self.width - 200, self.height - 20),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+        # BPM tepat di bawah FPS
+        cv2.putText(frame, f"BPM: {bpm}", (self.width - 150, 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 255, 255), 2)
+
+        # Instruksi quit
+        cv2.putText(frame, "Press 'Q' to quit", (self.width - 220, self.height - 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
 
         return frame
 
+
     def render(self, camera_frame, hand_data, arp_data, drum_data,
+<<<<<<< HEAD
                hand_height_left, volume, fingers_extended_right, fps):
+=======
+               hand_height_left, volume, fingers_extended_right, fps, bpm):
+        """Main render function"""
+        # Create visualization canvas
+>>>>>>> db5b17e (fix: appregiator note & visual)
         vis_frame = np.zeros((self.height, self.width, 3), dtype=np.uint8)
 
         vis_frame = self.draw_background(vis_frame)
@@ -284,6 +306,11 @@ class Visualizer:
         camera_small = cv2.resize(camera_frame, (320, 240))
         vis_frame[self.height-260:self.height-20, 20:340] = camera_small
 
+<<<<<<< HEAD
         vis_frame = self.draw_info(vis_frame, fps)
+=======
+        # Draw info
+        vis_frame = self.draw_info(vis_frame, fps, bpm)
+>>>>>>> db5b17e (fix: appregiator note & visual)
 
         return vis_frame
