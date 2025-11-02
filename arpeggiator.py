@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 """
 Arpeggiator Controller (Single Note)
@@ -8,6 +9,8 @@ Hand #1 controls one continuous note:
 """
 
 >>>>>>> db5b17e (fix: appregiator note & visual)
+=======
+>>>>>>> 399c403 (integrated with bpm feature edwin)
 import pygame
 import numpy as np
 import array

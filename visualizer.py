@@ -311,6 +311,9 @@ class Visualizer:
 =======
         # Draw info
         vis_frame = self.draw_info(vis_frame, fps, bpm)
+<<<<<<< HEAD
 >>>>>>> db5b17e (fix: appregiator note & visual)
+=======
+>>>>>>> 399c403 (integrated with bpm feature edwin)
 
         return vis_frame
