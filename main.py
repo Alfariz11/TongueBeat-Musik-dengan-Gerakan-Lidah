@@ -55,7 +55,8 @@ class MusicController:
             arp_data = self.arpeggiator.update(
                 self.hand_height_left,
                 pinch_distance,
-                current_time
+                current_time,
+                self.drum_machine.bpm
             )
 
             self.volume = self.arpeggiator.volume
@@ -103,7 +104,9 @@ class MusicController:
 
                 hand_data = self.hand_tracker.process_frame(frame)
 
-                frame_with_hands = self.hand_tracker.draw_landmarks(frame.copy())
+                frame_with_hands = frame.copy()
+                frame_with_hands = self.hand_tracker.draw_roi_zones(frame_with_hands)
+                frame_with_hands = self.hand_tracker.draw_landmarks(frame_with_hands)
 
                 arp_data, drum_data = self.process_hands(hand_data, current_time)
 

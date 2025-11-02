@@ -1,10 +1,3 @@
-"""
-Arpeggiator Controller (Single Note)
-Hand #1 controls one continuous note:
-- Raise hand = higher pitch
-- Pinch = louder volume
-"""
-
 import pygame
 import numpy as np
 import array

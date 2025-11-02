@@ -296,5 +296,3 @@ class Visualizer:
         vis_frame = self.draw_info(vis_frame, fps, bpm)
 
         return vis_frame
-
-        return vis_frame
