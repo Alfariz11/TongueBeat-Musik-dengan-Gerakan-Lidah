@@ -42,6 +42,57 @@ python facial_landmarks.py -i path/to/image.jpg
 
 ---
 
+## 📖 Cara Penggunaan
+
+### Menjalankan Aplikasi
+
+1. **Pastikan folder `audios` berisi 5 file audio yang diperlukan:**
+   - `kick.wav`
+   - `snare.wav`
+   - `hihat.wav`
+   - `hightom.wav`
+   - `crashcymbal.wav`
+
+2. **Jalankan aplikasi utama:**
+   ```bash
+   python main.py
+   ```
+
+3. **Posisikan tangan Anda di depan webcam:**
+   - **Tangan Kiri**: Kontrol Arpeggiator
+   - **Tangan Kanan**: Kontrol Drum Machine
+
+### Kontrol Aplikasi
+
+#### Tangan Kiri (Arpeggiator)
+- **Naikkan/turunkan tangan**: Mengatur pitch nada (semakin tinggi tangan, semakin tinggi pitch)
+- **Gesture pinch (ibu jari + telunjuk)**: Mengatur volume suara
+
+#### Tangan Kanan (Drum Machine - Pattern Loop dengan Velocity)
+- **Thumb (Ibu jari)**: Kick pattern - Groovy pattern dengan syncopation
+- **Index (Telunjuk)**: Snare pattern - Backbeat klasik dengan ghost notes
+- **Middle (Tengah)**: Hihat pattern - Pattern kompleks dengan aksen dan variasi
+- **Ring (Manis)**: High Tom pattern - Pattern fill yang musikal
+- **Pinky (Kelingking)**: Crash pattern - Aksen strategis pada momen penting
+
+**Cara menggunakan**: Angkat jari Anda untuk mengaktifkan pattern loop instrumen. Setiap pattern memiliki:
+- **Velocity variations**: Ghost notes (lembut) dan accents (keras)
+- **Swing feel**: Groove yang lebih natural
+- **Mix balancing**: Volume yang dioptimalkan untuk kombinasi yang bagus
+
+Anda dapat mengaktifkan beberapa jari sekaligus untuk combo pattern yang kompleks. Semua pattern tersinkronisasi dalam loop 16 step.
+
+#### Keyboard Controls
+- **Q atau ESC**: Keluar dari aplikasi
+
+### Tips Penggunaan
+- Pastikan pencahayaan yang cukup agar hand tracking berfungsi optimal
+- Jaga jarak yang nyaman dengan webcam (sekitar 50-100 cm)
+- Pastikan kedua tangan terlihat jelas dalam frame kamera
+- Visualizer akan menampilkan efek partikel sesuai instrumen yang dimainkan
+
+---
+
 ## 📅 Logbook Mingguan
 
 | Tanggal | Kegiatan | Hasil / Progress |
