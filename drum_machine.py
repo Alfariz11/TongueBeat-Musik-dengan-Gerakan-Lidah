@@ -1,174 +1,226 @@
-"""
-Drum Machine Controller
-Hand #2 controls the drums (raise different fingers to change the pattern)
-"""
 import pygame
 import os
 
 
 class DrumMachine:
     def __init__(self):
-        # Larger buffer for smoother playback (but slightly more latency)
         pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024)
 
-        # Drum samples (loaded from assets folder)
+        self.finger_to_drum = [
+            'kick',
+            'snare',
+            'hihat',
+            'hightom',
+            'crashcymbal'
+        ]
+
         self.drum_sounds = {
             'kick': None,
             'snare': None,
             'hihat': None,
-            'clap': None,
+            'hightom': None,
+            'crashcymbal': None,
         }
 
-        # Volume control for each drum
         self.drum_volumes = {
-            'kick': 0.8,
-            'snare': 0.7,
-            'hihat': 0.5,
-            'clap': 0.6,
+            'kick': 0.85,
+            'snare': 0.75,
+            'hihat': 0.45,
+            'hightom': 0.55,
+            'crashcymbal': 0.65,
         }
 
-        # Load drum sounds from assets folder
-        self._load_drum_sounds()
+        self.pattern_sets = {
+            0: {
+                'kick': {
+                    0: 1.0, 4: 0.9, 7: 0.6, 8: 0.85, 10: 0.5, 12: 0.95,
+                },
+                'snare': {
+                    4: 1.0, 12: 1.0, 2: 0.3, 6: 0.35, 10: 0.4, 14: 0.3,
+                },
+                'hihat': {
+                    0: 0.6, 2: 0.4, 4: 0.5, 6: 0.4, 8: 0.55, 10: 0.4, 12: 0.5, 14: 0.4,
+                    1: 0.25, 3: 0.25, 5: 0.25, 7: 0.25, 9: 0.25, 11: 0.25, 13: 0.25, 15: 0.25,
+                },
+                'hightom': {
+                    1: 0.7, 5: 0.6, 9: 0.65, 13: 0.75, 3: 0.4, 7: 0.45, 11: 0.5, 15: 0.8,
+                },
+                'crashcymbal': {
+                    0: 1.0, 8: 0.85,
+                },
+            },
+            1: {
+                'kick': {
+                    0: 1.0, 3: 0.7, 6: 0.8, 10: 0.75, 12: 0.9, 15: 0.6,
+                },
+                'snare': {
+                    4: 1.0, 8: 0.85, 12: 1.0, 1: 0.3, 5: 0.35, 9: 0.3, 13: 0.4,
+                },
+                'hihat': {
+                    0: 0.5, 1: 0.3, 2: 0.4, 3: 0.3, 4: 0.45, 5: 0.3, 6: 0.4, 7: 0.3,
+                    8: 0.5, 9: 0.3, 10: 0.4, 11: 0.3, 12: 0.45, 13: 0.3, 14: 0.4, 15: 0.3,
+                },
+                'hightom': {
+                    2: 0.65, 6: 0.7, 10: 0.6, 14: 0.75, 4: 0.5, 8: 0.55, 12: 0.6,
+                },
+                'crashcymbal': {
+                    0: 1.0, 4: 0.7, 8: 0.9, 12: 0.8,
+                },
+            },
+            2: {
+                'kick': {
+                    0: 1.0, 2: 0.6, 4: 0.85, 6: 0.65, 8: 0.9, 11: 0.7, 12: 0.95, 14: 0.6,
+                },
+                'snare': {
+                    4: 1.0, 12: 1.0, 7: 0.5, 15: 0.45,
+                },
+                'hihat': {
+                    0: 0.55, 2: 0.35, 4: 0.45, 6: 0.35, 8: 0.5, 10: 0.35, 12: 0.45, 14: 0.35,
+                },
+                'hightom': {
+                    1: 0.8, 3: 0.65, 5: 0.7, 7: 0.75, 9: 0.65, 11: 0.7, 13: 0.8, 15: 0.85,
+                },
+                'crashcymbal': {
+                    0: 1.0,
+                },
+            },
+        }
 
-        # Timing
-        self.bpm = 120
-        self.step_duration = 60.0 / self.bpm / 4  # 16th notes
+        self.current_pattern_set = 0
+        self.drum_patterns = self.pattern_sets[self.current_pattern_set]
+
+        self.prev_fist_state = {'Left': False, 'Right': False}
+
+        self.active_fingers = [False] * 5
+
+        self.bpm = 125
+        self.swing_amount = 0.05
+        self.step_duration_base = 60.0 / self.bpm / 4
         self.last_step_time = 0
         self.current_step = 0
 
-        # Drum patterns (16 steps each)
-        # Each pattern is a dict of drum: [steps where it plays]
-        self.patterns = {
-            'pattern1': {  # Basic 4/4
-                'kick': [0, 4, 8, 12],
-                'snare': [4, 12],
-                'hihat': [0, 2, 4, 6, 8, 10, 12, 14],
-            },
-            'pattern2': {  # With clap
-                'kick': [0, 6, 10],
-                'snare': [4, 12],
-                'hihat': [0, 2, 4, 6, 8, 10, 12, 14],
-                'clap': [4, 12],
-            },
-            'pattern3': {  # Syncopated
-                'kick': [0, 3, 6, 10, 13],
-                'snare': [4, 12],
-                'hihat': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-                'clap': [7, 15],
-            },
-            'pattern4': {  # Break beat
-                'kick': [0, 3, 8, 11],
-                'snare': [4, 10, 13],
-                'hihat': [2, 6, 10, 14],
-                'clap': [4, 12],
-            },
-            'pattern5': {  # Minimal
-                'kick': [0, 8],
-                'snare': [4, 12],
-                'hihat': [0, 4, 8, 12],
-            }
-        }
+        self.recent_played = []
 
-        self.current_pattern_name = 'pattern1'
-        self.current_pattern = self.patterns['pattern1']
-
-        # Finger pattern mapping
-        self.finger_patterns = {
-            (False, False, False, False, False): 'pattern1',  # No fingers
-            (False, True, False, False, False): 'pattern1',   # Index
-            (False, True, True, False, False): 'pattern2',    # Index + Middle
-            (False, True, True, True, False): 'pattern3',     # Index + Middle + Ring
-            (False, True, True, True, True): 'pattern4',      # All except thumb
-            (True, True, True, True, True): 'pattern5',       # All fingers
-        }
+        self._load_drum_sounds()
 
     def _load_drum_sounds(self):
-        """Load drum sounds from assets folder"""
-        # Get the path to assets folder
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        assets_dir = os.path.join(current_dir, 'assets')
+        audios_dir = os.path.join(current_dir, 'audios')
 
-        # Map of drum names to filenames
         sound_files = {
             'kick': 'kick.wav',
             'snare': 'snare.wav',
             'hihat': 'hihat.wav',
-            'clap': 'clap.wav',
+            'hightom': 'hightom.wav',
+            'crashcymbal': 'crashcymbal.wav',
         }
 
-        # Load each sound file
-        loaded_count = 0
         for drum_name, filename in sound_files.items():
-            filepath = os.path.join(assets_dir, filename)
+            filepath = os.path.join(audios_dir, filename)
             try:
                 if os.path.exists(filepath):
                     sound = pygame.mixer.Sound(filepath)
-                    # Set volume for this drum
                     sound.set_volume(self.drum_volumes[drum_name])
                     self.drum_sounds[drum_name] = sound
-                    loaded_count += 1
-                    print(f"  [OK] {drum_name.ljust(8)} - Volume: {self.drum_volumes[drum_name]:.1f}")
                 else:
-                    print(f"  [WARNING] {filename} not found in assets folder")
                     self.drum_sounds[drum_name] = None
-            except Exception as e:
-                print(f"  [ERROR] Loading {filename}: {e}")
+            except Exception:
                 self.drum_sounds[drum_name] = None
 
-        print(f"\n  Loaded {loaded_count}/{len(sound_files)} drum sounds successfully")
+    def _get_step_duration(self, step):
+        if step % 2 == 1:
+            return self.step_duration_base * (1.0 + self.swing_amount)
+        else:
+            return self.step_duration_base * (1.0 - self.swing_amount)
 
-    def update(self, fingers_extended, current_time):
-        """Update drum machine based on finger positions
+    def change_pattern_set(self, pattern_set_index):
+        if pattern_set_index in self.pattern_sets:
+            self.current_pattern_set = pattern_set_index
+            self.drum_patterns = self.pattern_sets[self.current_pattern_set]
+            self.current_step = 0
 
-        Args:
-            fingers_extended: List of 5 booleans for each finger
-            current_time: Current time in seconds
-        """
-        # Select pattern based on fingers
-        fingers_tuple = tuple(fingers_extended)
+    def update(self, fingers_extended, current_time, is_fist=False):
+        if is_fist and not self.prev_fist_state.get('Right', False):
+            next_pattern = (self.current_pattern_set + 1) % len(self.pattern_sets)
+            self.change_pattern_set(next_pattern)
+        
+        self.prev_fist_state['Right'] = is_fist
+        self.active_fingers = fingers_extended.copy()
 
-        # Find the best matching pattern
-        if fingers_tuple in self.finger_patterns:
-            new_pattern = self.finger_patterns[fingers_tuple]
-            if new_pattern != self.current_pattern_name:
-                self.current_pattern_name = new_pattern
-                self.current_pattern = self.patterns[new_pattern]
+        active_drums = []
+        for finger_idx, is_active in enumerate(self.active_fingers):
+            if is_active:
+                drum_name = self.finger_to_drum[finger_idx]
+                active_drums.append(drum_name)
 
-        # Check if it's time for the next step
-        if current_time - self.last_step_time >= self.step_duration:
+        played_drums = []
+        
+        step_duration = self._get_step_duration(self.current_step)
+        
+        if current_time - self.last_step_time >= step_duration:
             self.last_step_time = current_time
+            
+            for drum_name in active_drums:
+                if drum_name in self.drum_patterns:
+                    pattern = self.drum_patterns[drum_name]
+                    if self.current_step in pattern:
+                        velocity = pattern[self.current_step]
+                        
+                        if self.drum_sounds[drum_name]:
+                            actual_volume = self.drum_volumes[drum_name] * velocity
+                            self.drum_sounds[drum_name].set_volume(actual_volume)
+                            self.drum_sounds[drum_name].play()
+                            self.drum_sounds[drum_name].set_volume(self.drum_volumes[drum_name])
+                            
+                            played_drums.append({
+                                'drum': drum_name,
+                                'velocity': velocity,
+                                'volume': actual_volume
+                            })
 
-            # Play drums for current step
-            played_drums = []
-            for drum_name, steps in self.current_pattern.items():
-                if self.current_step in steps:
-                    if self.drum_sounds[drum_name]:
-                        self.drum_sounds[drum_name].play()
-                        played_drums.append(drum_name)
+            if played_drums:
+                self.recent_played = played_drums.copy()
 
-            # Move to next step
             self.current_step = (self.current_step + 1) % 16
 
-            return {
-                'step': self.current_step,
-                'pattern': self.current_pattern_name,
-                'played': played_drums
-            }
+        active_patterns = {}
+        pattern_steps_flat = {}
+        for drum_name in active_drums:
+            if drum_name in self.drum_patterns:
+                pattern = self.drum_patterns[drum_name]
+                active_patterns[drum_name] = pattern
+                pattern_steps_flat[drum_name] = list(pattern.keys())
 
-        return None
+        return {
+            'step': self.current_step,
+            'played': [d['drum'] for d in played_drums] if played_drums else [],
+            'played_details': played_drums,
+            'active_drums': active_drums,
+            'active_patterns': active_patterns,
+            'active_patterns_flat': pattern_steps_flat,
+            'fingers_extended': fingers_extended,
+            'bpm': self.bpm,
+            'pattern_set': self.current_pattern_set
+        }
 
     def set_bpm(self, bpm):
-        """Set the tempo"""
         self.bpm = bpm
-        self.step_duration = 60.0 / self.bpm / 4
+        self.step_duration_base = 60.0 / self.bpm / 4
+
+    def set_swing(self, swing_amount):
+        self.swing_amount = max(0.0, min(0.2, swing_amount))
 
     def set_drum_volume(self, drum_name, volume):
-        """Set volume for a specific drum (0.0 to 1.0)"""
         if drum_name in self.drum_volumes:
             self.drum_volumes[drum_name] = max(0.0, min(1.0, volume))
             if self.drum_sounds[drum_name]:
                 self.drum_sounds[drum_name].set_volume(self.drum_volumes[drum_name])
 
-    def get_pattern_name(self):
-        """Get current pattern name"""
-        return self.current_pattern_name
+    def get_drum_name_for_finger(self, finger_idx):
+        if 0 <= finger_idx < len(self.finger_to_drum):
+            return self.finger_to_drum[finger_idx]
+        return None
+
+    def get_pattern_for_drum(self, drum_name):
+        return self.drum_patterns.get(drum_name, {})
+
