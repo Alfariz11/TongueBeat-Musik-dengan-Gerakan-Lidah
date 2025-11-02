@@ -8,7 +8,11 @@ import numpy as np
 
 
 class HandTracker:
+<<<<<<< HEAD
     def __init__(self, enable_roi=True):
+=======
+    def __init__(self):
+>>>>>>> 9178300 (new branch)
         self.mp_hands = mp.solutions.hands
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_drawing_styles = mp.solutions.drawing_styles
@@ -28,6 +32,7 @@ class HandTracker:
         self.smoothing_factor = 0.3  # Lower = smoother but more lag
         self.prev_hand_positions = {}  # Store previous positions for smoothing
 
+<<<<<<< HEAD
         # ROI (Region of Interest) settings
         self.enable_roi = enable_roi
         self.roi_zones = {
@@ -85,6 +90,8 @@ class HandTracker:
         else:
             return 'out_of_zone'
 
+=======
+>>>>>>> 9178300 (new branch)
     def process_frame(self, frame):
         """Process a frame and detect hands"""
         # Convert BGR to RGB
@@ -107,6 +114,7 @@ class HandTracker:
                 # Determine which hand (Left or Right)
                 hand_label = handedness.classification[0].label
 
+<<<<<<< HEAD
                 # Check if hand is in ROI
                 in_roi = self.is_hand_in_roi(hand_landmarks, hand_label)
 
@@ -114,13 +122,18 @@ class HandTracker:
                 center_x = sum([lm.x for lm in hand_landmarks.landmark]) / 21
                 center_y = sum([lm.y for lm in hand_landmarks.landmark]) / 21
 
+=======
+>>>>>>> 9178300 (new branch)
                 # Store landmark data
                 self.hand_data[hand_label] = {
                     'landmarks': hand_landmarks,
                     'handedness': handedness,
+<<<<<<< HEAD
                     'in_roi': in_roi,
                     'center_x': center_x,
                     'center_y': center_y,
+=======
+>>>>>>> 9178300 (new branch)
                     'wrist_y': hand_landmarks.landmark[0].y,
                     'index_tip_y': hand_landmarks.landmark[8].y,
                     'middle_tip_y': hand_landmarks.landmark[12].y,
@@ -135,6 +148,7 @@ class HandTracker:
 
         return self.hand_data
 
+<<<<<<< HEAD
     def draw_roi_zones(self, frame):
         """Draw ROI zones on frame"""
         if not self.enable_roi:
@@ -222,10 +236,17 @@ class HandTracker:
                     landmark_style = self.mp_drawing_styles.get_default_hand_landmarks_style()
                     connection_style = self.mp_drawing_styles.get_default_hand_connections_style()
 
+=======
+    def draw_landmarks(self, frame):
+        """Draw hand landmarks on frame"""
+        if self.results.multi_hand_landmarks:
+            for hand_landmarks in self.results.multi_hand_landmarks:
+>>>>>>> 9178300 (new branch)
                 self.mp_drawing.draw_landmarks(
                     frame,
                     hand_landmarks,
                     self.mp_hands.HAND_CONNECTIONS,
+<<<<<<< HEAD
                     landmark_style,
                     connection_style
                 )
@@ -242,6 +263,11 @@ class HandTracker:
                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                     cv2.circle(frame, (x, y), 15, (0, 0, 255), 3)
 
+=======
+                    self.mp_drawing_styles.get_default_hand_landmarks_style(),
+                    self.mp_drawing_styles.get_default_hand_connections_style()
+                )
+>>>>>>> 9178300 (new branch)
         return frame
 
     def _smooth_value(self, key, new_value):

@@ -22,6 +22,7 @@ from visualizer import Visualizer
 
 class MusicController:
     def __init__(self):
+<<<<<<< HEAD
         print("\n[1/5] Initializing Hand Tracker...")
         self.hand_tracker = HandTracker()
         print("      Hand tracker ready!")
@@ -39,6 +40,17 @@ class MusicController:
 
         # Camera setup
         print("\n[5/5] Setting up Camera...")
+=======
+        print("Initializing Hand-Controlled Music Generator...")
+
+        # Initialize components
+        self.hand_tracker = HandTracker()
+        self.arpeggiator = Arpeggiator()
+        self.drum_machine = DrumMachine()
+        self.visualizer = Visualizer(width=1280, height=720)
+
+        # Camera setup
+>>>>>>> 9178300 (new branch)
         self.camera = cv2.VideoCapture(0)
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
@@ -46,8 +58,11 @@ class MusicController:
         if not self.camera.isOpened():
             raise RuntimeError("Could not open camera!")
 
+<<<<<<< HEAD
         print("      Camera ready!")
 
+=======
+>>>>>>> 9178300 (new branch)
         # Timing
         self.start_time = time.time()
         self.frame_count = 0
@@ -62,6 +77,7 @@ class MusicController:
         self.volume = 0.3
         self.fingers_extended_right = [False] * 5
 
+<<<<<<< HEAD
         print("\n" + "="*60)
         print("  INITIALIZATION COMPLETE!")
         print("="*60)
@@ -81,6 +97,16 @@ class MusicController:
         print("  " + "-"*56)
         print("\n  Press 'Q' or 'ESC' to quit")
         print("  " + "="*56 + "\n")
+=======
+        print("* Initialization complete!")
+        print("\nControls:")
+        print("  Left Hand (Arpeggiator):")
+        print("    - Raise hand = Higher pitch")
+        print("    - Pinch fingers = Change volume")
+        print("  Right Hand (Drums):")
+        print("    - Change finger positions = Switch drum patterns")
+        print("\nPress 'Q' to quit\n")
+>>>>>>> 9178300 (new branch)
 
     def update_fps(self):
         """Calculate FPS"""
@@ -125,7 +151,11 @@ class MusicController:
 
     def run(self):
         """Main application loop"""
+<<<<<<< HEAD
         print("\n[*] Starting main loop...")
+=======
+        print("Starting main loop...")
+>>>>>>> 9178300 (new branch)
 
         try:
             while self.running:
@@ -203,10 +233,18 @@ class MusicController:
 
 def main():
     """Entry point"""
+<<<<<<< HEAD
     print("\n" + "=" * 60)
     print("  HAND-CONTROLLED MUSIC GENERATOR")
     print("  Arpeggiator + Drum Machine + Visualizer")
     print("=" * 60)
+=======
+    print("=" * 60)
+    print("  HAND-CONTROLLED MUSIC GENERATOR")
+    print("  Arpeggiator + Drum Machine + Visualizer")
+    print("=" * 60)
+    print()
+>>>>>>> 9178300 (new branch)
 
     try:
         controller = MusicController()
