@@ -49,12 +49,6 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
    pip install -r requirements.txt
    ```
 
-4. **Pastikan folder assets berisi file audio yang diperlukan**
-   - `assets/kick.wav`
-   - `assets/snare.wav`
-   - `assets/hihat.wav`
-   - `assets/clap.wav`
-
 ---
 
 ## 📖 Penggunaan
