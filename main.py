@@ -8,7 +8,6 @@ from hand_tracker import HandTracker
 from arpeggiator import Arpeggiator
 from drum_machine import DrumMachine
 
-
 def main():
     cap = cv2.VideoCapture(0)
     tracker = HandTracker()
@@ -28,14 +27,11 @@ def main():
         if not ret:
             break
 
-        # === Hand tracking ===
         hand_data = tracker.process_frame(frame)
         hand_height_right = 0.0
         volume = 0.0
         arp_data = None
 
-        # SWAP karena kamera mirror
-        # RIGHT di layar = tangan kanan pengguna
         if "Right" in hand_data and hand_data["Right"]:
             hand_height_right = tracker.get_hand_height("Right")
             pinch_right = tracker.get_pinch_distance("Right")
@@ -44,19 +40,16 @@ def main():
             if arp_data and arp_data.get("note") != arp.last_note:
                 vis.spawn_particles_at_hand(hand_data, "Right", color=(100, 200, 255), intensity=6)
         else:
-            # kalau tangan kanan (pengontrol arpeggiator) hilang → hentikan nada
             if arp.current_sound:
                 arp.current_sound.fadeout(200)
             arp_data = None
 
-        # left di layar = tangan kiri pengguna
         fingers_left = tracker.get_fingers_extended("Left")
         is_fist_left = tracker.is_fist("Left")
         drum_data = drum.update(fingers_left, time.time(), is_fist_left)
         if drum_data and drum_data.get("played_details"):
             vis.spawn_particles_at_hand(hand_data, "Left", color=(255, 150, 100), intensity=10)
 
-        # === Visualization ===
         vis.draw_background()
         vis.draw_arpeggiator(arp_data, hand_height_right, volume)
         vis.draw_drum_visualization(drum_data)
@@ -68,10 +61,8 @@ def main():
         vis.update_particles()
         vis.update_display()
 
-        # === Control FPS ===
         clock.tick(60)
 
-        # === Event Handling ===
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (
                 event.type == pygame.KEYDOWN and event.key == pygame.K_q
@@ -81,6 +72,7 @@ def main():
     print("[INFO] Exiting...")
     cap.release()
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()

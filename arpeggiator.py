@@ -8,7 +8,7 @@ class Arpeggiator:
         pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 
         self.sample_rate = 44100
-        self.base_midi = 57  # A3
+        self.base_midi = 57
         self.volume = 2.0
         self.last_note = None
         self.current_sound = None
@@ -49,7 +49,6 @@ class Arpeggiator:
             self.bpm = bpm
             self.step_duration = 60.0 / self.bpm / 4
 
-        # pitch berdasarkan tinggi tangan
         midi_note = self.base_midi + int(hand_height * 36)
         freq = self.midi_to_freq(midi_note)
         
