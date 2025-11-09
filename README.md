@@ -102,7 +102,11 @@ Anda dapat mengaktifkan beberapa jari sekaligus untuk combo pattern yang komplek
 =======
 | 10/28/2025 | Pembuatan Repositori github Tugas Besar | Repositori github tugas besar berhasil dibuat dengan struktur awal proyek |
 | 11/2/2025 | Implementasi Komponen Utama & Integrasi Aplikasi | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (5 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen di main application. Perbaikan audio system dengan real audio samples, optimisasi code, Custom BPM feature |
+<<<<<<< HEAD
 | 11/9/2025 | Integrasi Proyek (Visualizer) dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi |
 >>>>>>> 8905165 (Update README.md)
+=======
+| 11/9/2025 | Integrasi PyGame pada proyek dan penambahan fitur | Integrasi Proyek (Visualizer) dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi |
+>>>>>>> f265e1d (Update README.md)
 
 ---
