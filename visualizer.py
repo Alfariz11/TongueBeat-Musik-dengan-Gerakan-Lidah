@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 from collections import deque
-
+import math
+import time
 
 class Visualizer:
     def __init__(self, width=1280, height=720):
@@ -16,6 +17,7 @@ class Visualizer:
         self.drum_history = deque(maxlen=16)
 
         self.particles = []
+        self.max_particles = 300
 
     def get_current_bpm(self):
         """Ambil nilai BPM dari modul DrumMachine (akan diisi saat render)"""
@@ -47,6 +49,7 @@ class Visualizer:
     def draw_arpeggiator_visualization(self, frame, arp_data, hand_height, volume):
         h, w = frame.shape[:2]
 
+        # Tambahan minimal: tetap tambahkan titik agar garis terus berjalan
         if arp_data:
             self.arp_history.append({
             'note': arp_data.get('note', 60),
@@ -57,7 +60,15 @@ class Visualizer:
             x = w // 4
             y = int(h * (1 - hand_height))
             self.create_particles(x, y, self.arp_color, int(volume * 20))
+        else:
+            # Jika tidak ada input, duplikasi titik terakhir agar garis terus bergerak
+            if len(self.arp_history) > 0:
+                self.arp_history.append(self.arp_history[-1])
+            else:
+                # kalau masih kosong dari awal, mulai dari nilai default
+                self.arp_history.append({'note': 60, 'volume': 0.5, 'octave': 0})
 
+        # === Tidak ada perubahan di bawah ini ===
         if len(self.arp_history) > 1:
             points = []
             for i, data in enumerate(self.arp_history):
@@ -75,11 +86,12 @@ class Visualizer:
 
         volume_height = int(volume * 150)
         cv2.rectangle(frame, (w//2 - 60, h - 50),
-                     (w//2 - 40, h - 50 - volume_height), (100, 255, 255), -1)
+                    (w//2 - 40, h - 50 - volume_height), (100, 255, 255), -1)
         cv2.putText(frame, "VOL", (w//2 - 70, h - 20),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.4, (150, 150, 200), 1)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (150, 150, 200), 1)
 
         return frame
+
 
     def draw_drum_visualization(self, frame, drum_data, fingers_extended):
         h, w = frame.shape[:2]
@@ -224,12 +236,19 @@ class Visualizer:
         return frame
 
     def create_particles(self, x, y, color, count):
+        # Kurangi jumlah partikel per event
+        count = min(count, 8)  # misal maksimal 8 per trigger
+
+        # Batasi total partikel aktif
+        if len(self.particles) > self.max_particles:
+            return  # jangan tambah partikel baru kalau sudah kebanyakan
+
         for _ in range(count):
             particle = {
-                'x': x,
-                'y': y,
-                'vx': np.random.uniform(-5, 5),
-                'vy': np.random.uniform(-5, 5),
+                'x': x + np.random.uniform(-3, 3),
+                'y': y + np.random.uniform(-3, 3),
+                'vx': np.random.uniform(-2, 2),
+                'vy': np.random.uniform(-3, 1),
                 'life': 1.0,
                 'color': color
             }

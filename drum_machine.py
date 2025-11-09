@@ -63,14 +63,15 @@ class DrumMachine:
         }
 
         self.drum_volumes = {
-            'kick': 0.85,
-            'snare': 0.75,
-            'hihat': 0.45,
-            'hightom': 0.55,
-            'crashcymbal': 0.65,
+            'kick': 0.5,
+            'snare': 0.5,
+            'hihat': 0.5,
+            'hightom': 0.5,
+            'crashcymbal': 0.5,
         }
 >>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)
 
+<<<<<<< HEAD
         self.drum_patterns = {
             'kick': {
                 0: 1.0,
@@ -87,6 +88,43 @@ class DrumMachine:
                 6: 0.35,
                 10: 0.4,
                 14: 0.3,
+=======
+        self.pattern_sets = {
+            0: {
+                'kick': {
+                    0: 1.0,     # langkah 1
+                    8: 0.9,     # langkah 3 (half bar later)
+                    # tambahan sedikit variasi untuk feel pop
+                    12: 0.7,    # langkah 4 (optional)
+                },
+                'snare': {
+                    4: 1.0,     # beat 2
+                    12: 1.0,    # beat 4
+                },
+                'hihat': {
+                    0: 0.5, 1: 0.5,
+                    2: 0.5, 3: 0.5,
+                    4: 0.5, 5: 0.5,
+                    6: 0.5, 7: 0.5,
+                    8: 0.5, 9: 0.5,
+                    10:0.5, 11:0.5,
+                    12:0.5, 13:0.5,
+                    14:0.5, 15:0.5,
+                },
+                'hightom': {
+                    14: 0.6,    # fill ringan di akhir
+                    15: 0.6,
+                },
+                'crashcymbal': {
+                    0: 1.0,     # aksen pembuka
+                },
+            },
+            1: {
+                'kick': {0:1.0, 8:0.9},
+                'snare': {4:1.0, 12:1.0},
+                'hihat': {i:0.5 for i in range(16)},  # 1/8 note steady
+                'crashcymbal': {0:1.0},
+>>>>>>> db73a75 (better beat pattern (more soon), optimize visualizer (particles spawn))
             },
             'hihat': {
                 0: 0.6,
