@@ -40,7 +40,7 @@ class DrumMachine:
         self.drum_patterns = self.pattern_sets[self.current_pattern_set]
         self.prev_fist_state = {'Left': False, 'Right': False}
         self.active_fingers = [False] * 5
-        self.bpm = 125
+        self.bpm = 120
         self.swing_amount = 0.05
         self.step_duration_base = 60.0 / self.bpm / 4
         self.last_step_time = 0
