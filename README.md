@@ -70,7 +70,7 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
 
 #### Tangan Kiri (Arpeggiator)
 - **Naikkan/turunkan tangan**: Mengatur pitch nada (semakin tinggi tangan, semakin tinggi pitch)
-- **Gesture pinch (ibu jari + telunjuk)**: Mengatur volume suara
+- **Gesture pinch (ibu jari + telunjuk)**: Mengatur volume suara, semakin kecil jarak ibu jari dan telunjuk semakin kecil, begitu juga sebaliknya
 
 #### Tangan Kanan (Drum Machine)
 - **Tidak ada jari terangkat**: Pattern 1 (Basic 4/4)
@@ -85,7 +85,7 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
 
 ### Tips Penggunaan
 - Pastikan pencahayaan yang cukup agar hand tracking berfungsi optimal
-- Jaga jarak yang nyaman dengan webcam (sekitar 50-100 cm)
+- Jaga jarak yang nyaman dengan webcam
 - Pastikan kedua tangan terlihat jelas dalam frame kamera
 - Visualizer akan menampilkan efek partikel sesuai intensitas dan ritme musik
 
@@ -103,6 +103,6 @@ python test_drums.py
 |---------|-----------|------------------|
 | 10/28/2025 | Pembuatan Repositori github Tugas Besar | Repositori github tugas besar berhasil dibuat dengan struktur awal proyek |
 | 11/2/2025 | Implementasi Komponen Utama & Integrasi Aplikasi | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (5 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen di main application. Perbaikan audio system dengan real audio samples, optimisasi code, Custom BPM feature |
-
+| 11/9/2025 | Integrasi Proyek (Visualizer) dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi |
 
 ---
