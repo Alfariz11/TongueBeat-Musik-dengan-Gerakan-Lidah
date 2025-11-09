@@ -62,12 +62,14 @@ class DrumMachine:
             'crashcymbal': None,
         }
 
+        self.master_gain = 0.3
+
         self.drum_volumes = {
-            'kick': 0.5,
-            'snare': 0.5,
-            'hihat': 0.5,
-            'hightom': 0.5,
-            'crashcymbal': 0.5,
+            'kick': 0.85 * self.master_gain,
+            'snare': 0.75 * self.master_gain,
+            'hihat': 0.45 * self.master_gain,
+            'hightom': 0.55 * self.master_gain,
+            'crashcymbal': 0.65 * self.master_gain,
         }
 >>>>>>> d72103c (Refactor arpeggiator and drum machine modules for improved structure and functionality. Removed unnecessary comments, enhanced drum pattern handling, and added audio file loading for drum sounds. Updated visualizer to display detailed drum patterns and velocities. Improved hand tracking and visualization integration.)
 
