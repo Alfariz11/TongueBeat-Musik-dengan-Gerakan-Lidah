@@ -288,6 +288,10 @@ def main():
 
     clock = pygame.time.Clock()
     running = True
+
+    bpm_locked = True
+    bpm_base = drum.bpm
+    bpm_ref_height = 0.0
     bpm = drum.bpm
     fps = 0
 
@@ -317,6 +321,24 @@ def main():
 
         fingers_left = tracker.get_fingers_extended("Left")
         is_fist_left = tracker.is_fist("Left")
+        pinch_left = tracker.get_pinch_distance("Left")
+        hand_height_left = tracker.get_hand_height("Left")
+
+        # === BPM Control ===
+        if pinch_left < 0.25:  # jari menjepit -> unlock
+            if bpm_locked:
+                bpm_locked = False
+                bpm_ref_height = hand_height_left
+                bpm_base = drum.bpm
+        else:  # lepas -> lock lagi
+            bpm_locked = True
+
+        if not bpm_locked:
+            diff = (hand_height_left - bpm_ref_height) * 200  # sensitivitas
+            new_bpm = int(np.clip(bpm_base + diff, 60, 200))
+            drum.set_bpm(new_bpm)
+            arp.set_bpm(drum.bpm)
+            bpm = new_bpm
         drum_data = drum.update(fingers_left, time.time(), is_fist_left)
         if drum_data and drum_data.get("played_details"):
             vis.spawn_particles_at_hand(hand_data, "Left", color=(255, 150, 100), intensity=10)

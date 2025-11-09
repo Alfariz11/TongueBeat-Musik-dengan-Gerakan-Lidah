@@ -43,7 +43,7 @@ class Arpeggiator:
 >>>>>>> db5b17e (fix: appregiator note & visual)
         self.sample_rate = 44100
         self.base_midi = 57
-        self.volume = 2.0
+        self.volume = 0.5
         self.last_note = None
         self.current_sound = None
         self.bpm = 120
@@ -88,14 +88,12 @@ class Arpeggiator:
     def midi_to_freq(self, midi_note: int):
         return 440.0 * (2.0 ** ((midi_note - 69) / 12.0))
 
-    def generate_tone(self, frequency, duration=0.3, volume=0.5):
+    def generate_tone(self, frequency, duration=0.5, volume=0.5):
         samples = int(self.sample_rate * duration)
         t = np.linspace(0, duration, samples, False)
 
         wave = (
             np.sin(2 * np.pi * frequency * t)
-            + 0.5 * np.sin(4 * np.pi * frequency * t)
-            + 0.25 * np.sin(6 * np.pi * frequency * t)
         )
         wave /= np.max(np.abs(wave))
 
@@ -134,10 +132,6 @@ class Arpeggiator:
 
 =======
     def update(self, hand_height, pinch_distance, current_time, bpm=None):
-        if bpm is not None:
-            self.bpm = bpm
-            self.step_duration = 60.0 / self.bpm / 4
-
         midi_note = self.base_midi + int(hand_height * 36)
         freq = self.midi_to_freq(midi_note)
         

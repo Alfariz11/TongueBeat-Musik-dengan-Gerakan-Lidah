@@ -166,7 +166,7 @@ class DrumMachine:
         self.prev_fist_state = {'Left': False, 'Right': False}
 >>>>>>> d7af595 (hapus comment, hapus file .md)
         self.active_fingers = [False] * 5
-        self.bpm = 125
+        self.bpm = 120
         self.swing_amount = 0.05
         self.step_duration_base = 60.0 / self.bpm / 4
         self.last_step_time = 0
