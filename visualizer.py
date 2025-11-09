@@ -81,8 +81,8 @@ class Visualizer:
         cv2.line(frame, (10, hand_y), (w//2 - 10, hand_y), (100, 255, 100), 2)
 
         volume_height = int(volume * 150)
-        cv2.rectangle(frame, (w//2 - 60, h - 50),
-                    (w//2 - 40, h - 50 - volume_height), (100, 255, 255), -1)
+        cv2.rectangle(frame, (w//2 - 60, h - 50 - volume_height),
+                    (w//2 - 40, h - 50), (100, 255, 255), -1)
         cv2.putText(frame, "VOL", (w//2 - 70, h - 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.4, (150, 150, 200), 1)
 
