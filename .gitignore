@@ -22,7 +22,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-.claude
 
 # Virtual Environment
 venv/
