@@ -1,100 +1,58 @@
-import cv2
-import pygame
-import numpy as np
-import time
+#!/usr/bin/env python3
+"""
+Gestune - Hand Gesture Music Controller
+Main application entry point with PyQt6 UI
 
-from visualizer_pygame import VisualizerPygame
-from hand_tracker import HandTracker
-from arpeggiator import Arpeggiator
-from drum_machine import DrumMachine
+This application uses hand gestures to control music:
+- Left hand: Controls arpeggiator (pitch and octave)
+- Right hand: Controls drums (each finger triggers different drum)
+"""
+
+import sys
+import cv2
+from PyQt6.QtWidgets import QApplication
+
+from gestune_ui import GestuneUI
+from gesture_processor import GestureProcessor
+
 
 def main():
-    cap = cv2.VideoCapture(0)
-    tracker = HandTracker()
-    arp = Arpeggiator()
-    drum = DrumMachine()
-    vis = VisualizerPygame()
-
-    clock = pygame.time.Clock()
-    running = True
-
-    bpm_locked = True
-    bpm_base = drum.bpm
-    bpm_ref_height = 0.0
-    bpm = drum.bpm
-    fps = 0
-
-    print("[INFO] Starting Pygame visualizer...")
-
-    while running:
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        hand_data = tracker.process_frame(frame)
-        hand_height_right = 0.0
-        volume = 0.0
-        arp_data = None
-
-        if "Right" in hand_data and hand_data["Right"]:
-            hand_height_right = tracker.get_hand_height("Right")
-            pinch_right = tracker.get_pinch_distance("Right")
-            volume = max(0.0, min(1.0, 1.0 - pinch_right)) if pinch_right else 0.5
-            arp_data = arp.update(hand_height_right, volume, time.time())
-            if arp_data and arp_data.get("note") != arp.last_note:
-                vis.spawn_particles_at_hand(hand_data, "Right", color=(100, 200, 255), intensity=6)
-        else:
-            if arp.current_sound:
-                arp.current_sound.fadeout(200)
-            arp_data = None
-
-        fingers_left = tracker.get_fingers_extended("Left")
-        is_fist_left = tracker.is_fist("Left")
-        pinch_left = tracker.get_pinch_distance("Left")
-        hand_height_left = tracker.get_hand_height("Left")
-
-        # === BPM Control ===
-        if pinch_left < 0.25:  # jari menjepit -> unlock
-            if bpm_locked:
-                bpm_locked = False
-                bpm_ref_height = hand_height_left
-                bpm_base = drum.bpm
-        else:  # lepas -> lock lagi
-            bpm_locked = True
-
-        if not bpm_locked:
-            diff = (hand_height_left - bpm_ref_height) * 200  # sensitivitas
-            new_bpm = int(np.clip(bpm_base + diff, 60, 200))
-            drum.set_bpm(new_bpm)
-            arp.set_bpm(drum.bpm)
-            bpm = new_bpm
-        drum_data = drum.update(fingers_left, time.time(), is_fist_left)
-        if drum_data and drum_data.get("played_details"):
-            vis.spawn_particles_at_hand(hand_data, "Left", color=(255, 150, 100), intensity=10)
-
-        vis.draw_background()
-        vis.draw_arpeggiator(arp_data, hand_height_right, volume)
-        vis.draw_drum_visualization(drum_data)
-        vis.draw_drum_velocity_bars(drum_data)
-        vis.draw_camera_feed(frame, hand_data)
-
-        fps = clock.get_fps()
-        vis.draw_info(fps, bpm)
-        vis.update_particles()
-        vis.update_display()
-
-        clock.tick(60)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (
-                event.type == pygame.KEYDOWN and event.key == pygame.K_q
-            ):
-                running = False
-
-    print("[INFO] Exiting...")
-    cap.release()
-    pygame.quit()
+    """Main application entry point"""
+    app = QApplication(sys.argv)
+    
+    # Create main window
+    window = GestuneUI()
+    
+    # Initialize gesture processor
+    processor = GestureProcessor()
+    
+    # Connect signals from processor to UI
+    processor.frame_processed.connect(window.update_camera_feed)
+    processor.hand_detected.connect(window.update_hand_status)
+    processor.fps_updated.connect(window.update_fps)
+    processor.drum_hit.connect(window.trigger_drum_indicator)
+    
+    # Connect UI controls to processor
+    window.bpm_changed.connect(processor.set_bpm)
+    window.pattern_changed.connect(processor.change_pattern)
+    
+    # Setup cleanup on window close
+    def cleanup():
+        processor.stop()
+        processor.wait()
+        cv2.destroyAllWindows()
+    
+    window.destroyed.connect(cleanup)
+    
+    # Start processing
+    processor.start()
+    
+    # Show window
+    window.show()
+    
+    # Start event loop
+    sys.exit(app.exec())
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

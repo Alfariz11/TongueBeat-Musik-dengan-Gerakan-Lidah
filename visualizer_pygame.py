@@ -27,11 +27,21 @@ class VisualizerPygame:
         self.screen.fill(self.bg_color)
         pygame.draw.rect(self.screen, self.zone_left_color, (0, 0, self.width // 2, self.height))
         pygame.draw.rect(self.screen, self.zone_right_color, (self.width // 2, 0, self.width // 2, self.height))
-        self._draw_text("HAND #1: ARPEGGIATOR", (20, 20), self.text_color, self.font_large)
-        self._draw_text("Raise hand = Higher pitch", (20, 50))
-        self._draw_text("Pinch = Volume control", (20, 70))
-        self._draw_text("HAND #2: DRUMS", (self.width // 2 + 20, 20), self.text_color, self.font_large)
-        self._draw_text("Each finger = One instrument", (self.width // 2 + 20, 50))
+        
+        # LEFT ZONE = ARPEGGIATOR
+        self._draw_text("LEFT HAND: ARPEGGIATOR 🎹", (20, 20), self.text_color, self.font_large)
+        self._draw_text("↕ Raise/Lower hand = Pitch", (20, 50), (150, 200, 255))
+        self._draw_text("👌 Pinch fingers = Volume", (20, 70), (150, 200, 255))
+        self._draw_text("🎚️ Pinch + Move = BPM", (20, 90), (150, 200, 255))
+        
+        # RIGHT ZONE = DRUMS
+        self._draw_text("RIGHT HAND: DRUMS 🥁", (self.width // 2 + 20, 20), self.text_color, self.font_large)
+        self._draw_text("👍 Thumb = Kick", (self.width // 2 + 20, 50), (255, 180, 100))
+        self._draw_text("👆 Index = Snare", (self.width // 2 + 20, 70), (255, 180, 100))
+        self._draw_text("🖕 Middle = Hi-hat", (self.width // 2 + 20, 90), (255, 180, 100))
+        self._draw_text("💍 Ring = Tom", (self.width // 2 + 20, 110), (255, 180, 100))
+        self._draw_text("🤙 Pinky = Cymbal", (self.width // 2 + 20, 130), (255, 180, 100))
+        self._draw_text("✊ Fist = Change pattern", (self.width // 2 + 20, 160), (255, 220, 100))
 
     def draw_arpeggiator(self, arp_data, hand_height, volume):
         note = arp_data.get("note", 60) if arp_data else 60
@@ -217,7 +227,56 @@ class VisualizerPygame:
     def draw_info(self, fps, bpm):
         self._draw_text(f"FPS: {fps:.1f}", (self.width - 150, 20))
         self._draw_text(f"BPM: {bpm}", (self.width - 150, 45))
-        self._draw_text("Press Q or close window to quit", (self.width - 300, self.height - 25))
+        self._draw_text("Press H for help | Q to quit", (self.width - 280, self.height - 25), (200, 200, 100))
+    
+    def draw_help_overlay(self):
+        """Draw help overlay with keyboard shortcuts and instructions"""
+        # Semi-transparent background
+        overlay = pygame.Surface((600, 400))
+        overlay.set_alpha(220)
+        overlay.fill((30, 30, 40))
+        
+        x = (self.width - 600) // 2
+        y = (self.height - 400) // 2
+        self.screen.blit(overlay, (x, y))
+        
+        # Border
+        pygame.draw.rect(self.screen, (100, 150, 255), (x, y, 600, 400), 3)
+        
+        # Title
+        title_font = pygame.font.SysFont("Arial", 28, bold=True)
+        title = title_font.render("🎵 GESTUNE HELP", True, (100, 200, 255))
+        self.screen.blit(title, (x + 180, y + 15))
+        
+        # Instructions
+        help_text = [
+            ("KEYBOARD SHORTCUTS:", (255, 255, 100)),
+            ("  H - Toggle this help", (200, 200, 200)),
+            ("  Q - Quit application", (200, 200, 200)),
+            ("  ↑ - Increase BPM (+5)", (200, 200, 200)),
+            ("  ↓ - Decrease BPM (-5)", (200, 200, 200)),
+            ("", (0, 0, 0)),
+            ("HAND CONTROLS:", (255, 255, 100)),
+            ("  LEFT HAND = Arpeggiator (Melody)", (150, 200, 255)),
+            ("    • Move up/down = Change pitch", (180, 180, 200)),
+            ("    • Pinch fingers = Control volume", (180, 180, 200)),
+            ("    • Pinch + move = Adjust BPM", (180, 180, 200)),
+            ("", (0, 0, 0)),
+            ("  RIGHT HAND = Drums (Rhythm)", (255, 150, 100)),
+            ("    • Each finger = One instrument", (180, 180, 200)),
+            ("    • Fist = Change drum pattern", (180, 180, 200)),
+        ]
+        
+        y_offset = y + 60
+        for text, color in help_text:
+            if text:
+                surf = self.font_small.render(text, True, color)
+                self.screen.blit(surf, (x + 30, y_offset))
+            y_offset += 22
+        
+        # Footer
+        footer = self.font_small.render("Press H to close", True, (150, 150, 150))
+        self.screen.blit(footer, (x + 230, y + 365))
 
     def _draw_text(self, text, pos, color=None, font=None):
         font = font or self.font_small
