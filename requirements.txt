@@ -1,4 +1,5 @@
 # Hand-Controlled Arpeggiator and Drum Machine Requirements
+<<<<<<< HEAD
 opencv-python>=4.8.0
 mediapipe>=0.10.0
 numpy>=1.24.0
@@ -12,3 +13,15 @@ pillow>=10.0.0
 =======
 pillow>=10.0.0
 >>>>>>> 9178300 (new branch)
+=======
+opencv-python
+mediapipe
+numpy
+pygame
+mido
+python-rtmidi
+scipy
+matplotlib
+pillow
+pyqt6
+>>>>>>> f029b79 (feat: add new ui using pyqt6 and a lot new improvement for landmarking)
