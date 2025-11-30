@@ -140,6 +140,12 @@ class GestuneApplication:
             self.processor.set_bpm,
             Qt.ConnectionType.QueuedConnection
         )
+
+        self.processor.bpm_updated.connect(
+            self.window.set_bpm,
+            Qt.ConnectionType.QueuedConnection
+        )
+
         
         self.window.pattern_changed.connect(
             self.processor.change_pattern,

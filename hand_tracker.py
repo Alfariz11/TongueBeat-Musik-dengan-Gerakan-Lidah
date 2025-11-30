@@ -498,6 +498,13 @@ class HandTracker:
         # Peace sign: index and middle extended, others closed
         return fingers[1] and fingers[2] and not fingers[3] and not fingers[4]
     
+    def is_bpm_unlock_gesture(self, right_pinch_distance: float) -> bool:
+        """
+        Return True jika pinch kanan cukup rapat untuk unlock BPM.
+        Semakin kecil nilai pinch_distance → semakin rapat jari.
+        """
+        return right_pinch_distance < 0.03   # threshold bisa kamu atur
+
     def get_hand_roi_status(self, hand_label: str) -> str:
         """
         Get ROI status for a hand.

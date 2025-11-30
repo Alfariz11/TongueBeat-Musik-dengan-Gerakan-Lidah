@@ -47,6 +47,7 @@ class GestureProcessor(QThread):
     pattern_changed = pyqtSignal(int)  # pattern_index
     error_occurred = pyqtSignal(str)  # error message
     detection_count_updated = pyqtSignal(int)  # number of hands detected
+    bpm_updated = pyqtSignal(int)  # current BPM
     
     # Constants
     DEFAULT_CAM_WIDTH = 1280
@@ -89,6 +90,14 @@ class GestureProcessor(QThread):
         self.last_frame_time = time.time()
         self.frame_skip_counter = 0
         self.max_frame_skip = 2
+
+        # BPM gesture control
+        self.bpm_unlocked = False
+        self.bpm_lock_threshold = 0.05   # Semakin kecil, semakin ketat
+        self.bpm_last_height = None
+        self.bpm_last_update_time = 0
+        self.bpm_smoothing = 0.15
+
         
     def setup(self) -> bool:
         """
@@ -235,13 +244,34 @@ class GestureProcessor(QThread):
                     
                 elif hand_label == HandSide.RIGHT.value:
                     right_detected = True
+
+                    # === STEP A: Ambil gesture BPM ===
+                    right_pinch = self.tracker.get_pinch_distance("Right")
+                    print(f"[DEBUG] Right pinch = {right_pinch:.3f}")
+                    right_height = 1.0 - hand_info["wrist_y"]
+
+                    # === STEP B: Lock / Unlock BPM ===
+                    if right_pinch < self.bpm_lock_threshold:   # Pinch kecil → unlock
+                        self.bpm_unlocked = True
+                    else:
+                        self.bpm_unlocked = False
+
+                    # === STEP C: Kalau unlock → ubah BPM ===
+                    if self.bpm_unlocked:
+                        self._update_bpm_from_gesture(right_height)
+
+                    # --------------------------------------------------
+                    # Lanjutkan proses Drum seperti biasa
+                    # --------------------------------------------------
                     self._process_drums(hand_info, frame.shape)
+                    
                     self._draw_hand_on_frame(
-                        frame, 
-                        hand_info, 
+                        frame,
+                        hand_info,
                         self.COLOR_RIGHT_HAND,
                         "KANAN: Drums 🥁"
                     )
+
             
             # Emit hand detection status (only if changed)
             if left_detected != self.last_hand_states[HandSide.LEFT.value]:
@@ -552,8 +582,38 @@ class GestureProcessor(QThread):
             if self.arp:
                 self.arp.set_bpm(bpm)
             print(f"🎵 BPM set to: {bpm}")
+            self.bpm_updated.emit(bpm)
+
         except Exception as e:
             print(f"Error setting BPM: {e}")
+        
+
+    def _update_bpm_from_gesture(self, hand_height: float):
+        current_time = time.time()
+
+        # Supaya BPM tidak update setiap frame → kasih cooldown 0.1 detik
+        if current_time - self.bpm_last_update_time < 0.1:
+            return
+
+        # Convert height (0–1) menjadi BPM (40–200)
+        raw_bpm = 40 + hand_height * 160   
+
+        # Smoothing biar halus
+        if self.bpm_last_height is None:
+            smoothed_bpm = raw_bpm
+        else:
+            smoothed_bpm = (
+                self.bpm_smoothing * raw_bpm +
+                (1 - self.bpm_smoothing) * self.bpm_last_height
+            )
+
+        self.bpm_last_height = smoothed_bpm
+        self.bpm_last_update_time = current_time
+
+        # Update ke arpeggiator & drum machine
+        bpm_int = int(smoothed_bpm)
+        self.set_bpm(bpm_int)
+
     
     def change_pattern(self, pattern_index: Optional[int] = None):
         """
