@@ -105,4 +105,5 @@ python test_drums.py
 | 11/2/2025 | Implementasi Komponen Utama & Integrasi Aplikasi | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (5 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen di main application. Perbaikan audio system dengan real audio samples, optimisasi code, Custom BPM feature |
 | 11/9/2025 | Integrasi PyGame pada proyek dan penambahan fitur | Integrasi Proyek (Visualizer) dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi |
 | 11/14/2025 | UI baru menggunakan PyQT6, fixing bugs |
+| 11/30/2025 | Remake Pinch BPM Controller | Menerapkan Pinch BPM pada UI baru dan meng-sinkronkan perubahan BPM dengan UI & slider |
 ---
