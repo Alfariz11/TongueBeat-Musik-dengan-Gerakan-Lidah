@@ -271,8 +271,12 @@ class GestureProcessor(QThread):
                         self.COLOR_RIGHT_HAND,
                         "KANAN: Drums 🥁"
                     )
-
             
+            # Setelah loop selesai, cek apakah tangan kiri terdeteksi
+            if not left_detected:
+                if self.arp:
+                    self.arp.mute()
+
             # Emit hand detection status (only if changed)
             if left_detected != self.last_hand_states[HandSide.LEFT.value]:
                 self.hand_detected.emit("left", left_detected)

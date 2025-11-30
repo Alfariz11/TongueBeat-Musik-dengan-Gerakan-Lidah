@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 from typing import Optional, Dict, Tuple
 from collections import OrderedDict
+from continuous_osc import ContinuousOscillator
 
 class Arpeggiator:
     def __init__(
@@ -50,6 +51,29 @@ class Arpeggiator:
         
         # Polyphony
         self.polyphony = polyphony
+
+        #Continuous oscillator
+        self.engine = ContinuousOscillator()
+        self.engine.set_volume(0.0)
+        self.engine.start()
+
+        self.smooth_freq = None
+        self.freq_smoothing = 0.05
+
+    def smooth_frequency(self, target_freq: float) -> float:
+        """
+        Haluskan pergerakan frekuensi supaya pitch nggak lompat-lompat.
+        """
+        if self.smooth_freq is None:
+            # Pertama kali: langsung set ke target (biar nggak delay di awal)
+            self.smooth_freq = target_freq
+        else:
+            # Exponential moving average (EMA)
+            self.smooth_freq = (
+                self.smooth_freq * (1.0 - self.freq_smoothing)
+                + target_freq * self.freq_smoothing
+            )
+        return self.smooth_freq
         
     def midi_to_freq(self, midi_note: int) -> float:
         """Convert MIDI note number to frequency in Hz."""
@@ -200,6 +224,18 @@ class Arpeggiator:
             
             # Get frequency
             freq = self.midi_to_freq(midi_note)
+
+            # Hitung frekuensi target dari MIDI
+            raw_freq = self.midi_to_freq(midi_note)
+
+            # Haluskan dengan smoothing
+            freq = self.smooth_frequency(raw_freq)
+
+            # Set oscillator dengan frekuensi halus
+            if self.engine is not None:
+                self.engine.set_frequency(freq)
+                self.engine.set_volume(self.volume)
+
             
             # Get or generate sound
             try:
@@ -242,6 +278,14 @@ class Arpeggiator:
         
         return None
     
+    def mute(self):
+        if self.engine:
+            self.engine.set_volume(0.0)
+
+    def unmute(self):
+        if self.engine:
+            self.engine.set_volume(self.volume)
+
     def set_bpm(self, bpm: int):
         """Update the BPM and recalculate step duration."""
         self.bpm = max(20, min(300, bpm))  # Clamp BPM to reasonable range

@@ -530,7 +530,10 @@ class DrumMachine:
     
     def __del__(self):
         """Destructor to ensure cleanup."""
-        self.cleanup()
+        try:
+            self.cleanup()
+        except Exception:
+            pass
 
 
 # Example usage and testing
