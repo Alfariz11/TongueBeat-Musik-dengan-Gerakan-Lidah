@@ -85,7 +85,6 @@ class GestuneUI(QMainWindow):
         super().__init__()
         self.setWindowTitle("🎵 Gestune - Musik dari Gerakan Tangan")
         self.setMinimumSize(1400, 850)
-        self.resize(1600, 900)
         
         # Fade-out timers for drum indicators
         self.drum_fade_timers: Dict[str, QTimer] = {}
@@ -95,8 +94,14 @@ class GestuneUI(QMainWindow):
         self.fps_update_timer = QTimer()
         self.fps_update_timer.timeout.connect(self._update_fps_display)
         
+        # Flag to prevent circular BPM updates
+        self._updating_bpm = False
+        
         # Initialize UI
         self.setup_ui()
+        
+        # Set window to full screen (maximized)
+        self.showMaximized()
         
         # Status bar with rich information
         self.statusBar().showMessage("🎵 Ready - Gestune v2.0 | Modern Hand Gesture Music Controller")
@@ -415,16 +420,28 @@ class GestuneUI(QMainWindow):
         header_layout.addWidget(self.left_hand_status)
         header_layout.addWidget(self.right_hand_status)
         
-        # Camera display
+        # Camera display - removed minimum size to eliminate black bars
         self.camera_label = QLabel()
-        self.camera_label.setMinimumSize(800, 600)
         self.camera_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.camera_label.setObjectName("cameraFeed")
         self.camera_label.setText("⏳ Menunggu kamera...\n\nPastikan webcam terhubung dan diizinkan")
         self.camera_label.setFont(QFont("Segoe UI", 14))
+        self.camera_label.setScaledContents(False)
         
         layout.addLayout(header_layout)
         layout.addWidget(self.camera_label, 1)
+        
+        # Add metrics and hand guide below camera
+        bottom_layout = QHBoxLayout()
+        bottom_layout.setSpacing(15)
+        
+        metrics = self.create_metrics_group()
+        hand_guide = self.create_hand_guide_group()
+        
+        bottom_layout.addWidget(metrics, 1)
+        bottom_layout.addWidget(hand_guide, 1)
+        
+        layout.addLayout(bottom_layout)
         
         return panel
     
@@ -457,19 +474,15 @@ class GestuneUI(QMainWindow):
         title.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        # Components
+        # Components - removed metrics and hand_guide from here
         bpm_control = self.create_bpm_control_group()
         pattern_control = self.create_pattern_control_group()
         visualization = self.create_visualization_group()
-        hand_guide = self.create_hand_guide_group()
-        metrics = self.create_metrics_group()
         
         layout.addWidget(title)
         layout.addWidget(bpm_control)
         layout.addWidget(pattern_control)
         layout.addWidget(visualization)
-        layout.addWidget(hand_guide)
-        layout.addWidget(metrics)
         layout.addStretch()
         
         scroll.setWidget(content_widget)
@@ -803,6 +816,10 @@ class GestuneUI(QMainWindow):
     
     def on_bpm_slider_changed(self, value: int):
         """Handle BPM slider change with validation"""
+        # Prevent circular updates
+        if self._updating_bpm:
+            return
+        
         clamped_value = max(self.MIN_BPM, min(self.MAX_BPM, value))
         self.bpm_value.setText(str(clamped_value))
         self.bpm_changed.emit(clamped_value)
@@ -842,6 +859,7 @@ class GestuneUI(QMainWindow):
                 QImage.Format.Format_RGB888
             )
             
+            # Scale to fit exactly without black bars
             scaled = QPixmap.fromImage(qt_image).scaled(
                 self.camera_label.size(),
                 Qt.AspectRatioMode.KeepAspectRatio,
@@ -947,7 +965,20 @@ class GestuneUI(QMainWindow):
     def set_bpm(self, bpm: int):
         """Set BPM value programmatically"""
         clamped = max(self.MIN_BPM, min(self.MAX_BPM, bpm))
+        self._updating_bpm = True
         self.bpm_slider.setValue(clamped)
+        self.bpm_value.setText(str(clamped))
+        self._updating_bpm = False
+    
+    def set_bpm_silent(self, bpm: int):
+        """Set BPM value without triggering bpm_changed signal (for external updates)"""
+        clamped = max(self.MIN_BPM, min(self.MAX_BPM, bpm))
+        self._updating_bpm = True
+        self.bpm_slider.blockSignals(True)
+        self.bpm_slider.setValue(clamped)
+        self.bpm_value.setText(str(clamped))
+        self.bpm_slider.blockSignals(False)
+        self._updating_bpm = False
     
     def closeEvent(self, event):
         """Handle window close event"""

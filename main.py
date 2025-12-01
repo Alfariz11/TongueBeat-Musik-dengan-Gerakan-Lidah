@@ -142,7 +142,7 @@ class GestuneApplication:
         )
 
         self.processor.bpm_updated.connect(
-            self.window.set_bpm,
+            self.window.set_bpm_silent,  # Changed to use silent update
             Qt.ConnectionType.QueuedConnection
         )
 
@@ -355,6 +355,8 @@ class GestuneApplication:
 </ul>
 
 <p><i>Tip: Keep your hands visible and in the colored zones for best results!</i></p>
+
+<p><i>This message will auto-close in 10 seconds...</i></p>
         """
         
         msg_box = QMessageBox(self.window)
@@ -363,7 +365,12 @@ class GestuneApplication:
         msg_box.setText(welcome_text)
         msg_box.setIcon(QMessageBox.Icon.Information)
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
-        msg_box.exec()
+        
+        # Show dialog non-blocking
+        msg_box.show()
+        
+        # Auto-close after 10 seconds
+        QTimer.singleShot(10000, msg_box.close)
 
 
 def check_dependencies() -> bool:
