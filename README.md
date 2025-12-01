@@ -69,16 +69,20 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
 ### Kontrol Aplikasi
 
 #### Tangan Kiri (Arpeggiator)
-- **Naikkan/turunkan tangan**: Mengatur pitch nada (semakin tinggi tangan, semakin tinggi pitch)
-- **Gesture pinch (ibu jari + telunjuk)**: Mengatur volume suara, semakin kecil jarak ibu jari dan telunjuk semakin kecil, begitu juga sebaliknya
+- **Posisi Naik/Turun**: Mengatur pitch nada (semakin tinggi tangan, semakin tinggi pitch).
+- **Gesture Pinch (Ibu Jari + Telunjuk)**: Mengatur volume suara.
 
-#### Tangan Kanan (Drum Machine)
-- **Tidak ada jari terangkat**: Pattern 1 (Basic 4/4)
-- **Telunjuk**: Pattern 1 (Basic 4/4)
-- **Telunjuk + Tengah**: Pattern 2 (With clap)
-- **Telunjuk + Tengah + Manis**: Pattern 3 (Syncopated)
-- **Semua kecuali ibu jari**: Pattern 4 (Break beat)
-- **Semua jari**: Pattern 5 (Minimal)
+#### Tangan Kanan (Drum Machine & Global Control)
+- **Jari Terbuka**: Mengaktifkan instrumen drum (Mute/Unmute):
+  - Ibu Jari: Kick
+  - Telunjuk: Snare
+  - Tengah: Hi-hat
+  - Manis: High Tom
+  - Kelingking: Crash Cymbal
+- **Kepalan Tangan (Fist)**: Mengganti Pattern Drum (Next Pattern).
+- **Gesture Pinch (Ibu Jari + Telunjuk)**: Mengatur BPM.
+  - Tahan Pinch untuk membuka kunci pengaturan BPM.
+  - Gerakkan tangan naik/turun sambil pinch untuk mengubah kecepatan tempo.
 
 #### Keyboard Controls
 - **Q atau ESC**: Keluar dari aplikasi
