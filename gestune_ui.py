@@ -16,6 +16,8 @@ import numpy as np
 from typing import Optional, Dict, List, Tuple
 from enum import Enum
 
+from patterns import DRUM_PATTERNS
+
 
 class HandSide(Enum):
     """Enum for hand sides."""
@@ -579,7 +581,7 @@ class GestuneUI(QMainWindow):
         btn_container.setSpacing(8)
         
         self.pattern_buttons = []
-        for i in range(5):
+        for i in range(len(DRUM_PATTERNS)):
             btn = QPushButton(f"Pattern {i + 1}")
             btn.setObjectName("controlButton")
             btn.setCheckable(True)

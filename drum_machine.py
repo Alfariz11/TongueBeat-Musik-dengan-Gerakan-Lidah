@@ -3,6 +3,7 @@ import os
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from patterns import DRUM_PATTERNS
 
 @dataclass
 class DrumHit:
@@ -31,7 +32,7 @@ class DrumMachine:
     
     def __init__(
         self,
-        master_gain: float = 0.3,
+        master_gain: float = 0.5,
         bpm: int = 120,
         swing_amount: float = 0.05,
         num_channels: int = 16
@@ -67,11 +68,11 @@ class DrumMachine:
         # Volume settings
         self.master_gain = max(0.0, min(1.0, master_gain))
         self.drum_volumes = {
-            'kick': 0.85,
-            'snare': 0.75,
-            'hihat': 0.45,
-            'hightom': 0.55,
-            'crashcymbal': 0.65,
+            'kick': 1,
+            'snare': 1,
+            'hihat': 1,
+            'hightom': 1,
+            'crashcymbal': 1,
         }
         
         # Pattern definitions
@@ -101,87 +102,10 @@ class DrumMachine:
         self._load_drum_sounds()
         
     def _initialize_patterns(self):
-        """Initialize all drum patterns."""
-        self.pattern_sets: Dict[int, Dict[str, Dict[int, float]]] = {
-            # Pattern 0: Basic rock beat
-            0: {
-                'kick': {
-                    0: 1.0, 
-                    5: 0.7, 
-                    8: 0.9, 
-                    11: 0.6
-                },
-                'snare': {
-                    4: 1.0,
-                    12: 1.0
-                },
-                'hihat': {
-                    **{i: 0.45 for i in range(16)},
-                    **{3: 0.25, 7: 0.25, 11: 0.25, 15: 0.25}
-                },
-                'hightom': {},
-                'crashcymbal': {
-                    0: 0.9
-                },
-            },
-            # Pattern 1: Simple beat
-            1: {
-                'kick': {
-                    0: 1.0,
-                    4: 1.0,
-                    8: 1.0,
-                    12: 1.0
-                },
-                'snare': {
-                    4: 0.9,
-                    12: 0.9
-                },
-                'hihat': {
-                    2: 0.6,
-                    6: 0.6,
-                    10: 0.6,
-                    14: 0.6,
-                    **{i: 0.35 for i in range(16)}
-                },
-                'hightom': {
-                    7: 0.5,
-                    15: 0.6
-                },
-                'crashcymbal': {
-                    0: 1.0
-                },
-            },
-            # Pattern 2: Complex/funky beat
-            2: {
-                'kick': {
-                    0: 1.0,
-                    3: 0.55,
-                    7: 0.85,
-                    10: 0.6,
-                    14: 0.75
-                },
-                'snare': {
-                    4: 1.0,
-                    12: 1.0,
-                    6: 0.35,  
-                    15: 0.3    
-                },
-                'hihat': {
-                    **{i: 0.4 for i in range(16)},
-                    2: 0.55, 
-                    6: 0.55,
-                    10: 0.55,
-                    14: 0.55
-                },
-                'hightom': {
-                    9: 0.45
-                },
-                'crashcymbal': {},
-            },
-        }
+        self.pattern_sets = DRUM_PATTERNS.copy()
         self.current_pattern_set = 0
         self.drum_patterns = self.pattern_sets[self.current_pattern_set]
-    
+
     def _clamp_bpm(self, bpm: int) -> int:
         """Clamp BPM to valid range."""
         return max(self.MIN_BPM, min(self.MAX_BPM, bpm))
@@ -567,7 +491,10 @@ class DrumMachine:
     
     def __del__(self):
         """Destructor to ensure cleanup."""
-        self.cleanup()
+        try:
+            self.cleanup()
+        except:
+            pass
 
 
 # Example usage and testing
@@ -576,7 +503,7 @@ if __name__ == "__main__":
     
     # Create drum machine
     drum_machine = DrumMachine(
-        master_gain=0.4,
+        master_gain=10,
         bpm=120,
         swing_amount=0.08
     )

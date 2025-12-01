@@ -96,7 +96,7 @@ class GestureProcessor(QThread):
         self.bpm_lock_threshold = 0.05   # Semakin kecil, semakin ketat
         self.bpm_last_height = None
         self.bpm_last_update_time = 0
-        self.bpm_smoothing = 0.15
+        self.bpm_smoothing = 0.05
 
         
     def setup(self) -> bool:

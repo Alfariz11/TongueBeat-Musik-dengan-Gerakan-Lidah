@@ -30,7 +30,7 @@ class Arpeggiator:
         
         self.sample_rate = 44100
         self.base_midi = 57
-        self.volume = 0.5
+        self.volume = 0.2
         self.last_note = None
         self.current_channels = []
         
