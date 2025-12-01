@@ -1,0 +1,49 @@
+% BAB I - TENTANG APLIKASI
+\section{Tentang Aplikasi}
+
+\subsection{Deskripsi Proyek}
+
+Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilkan musik hanya dengan gerakan tangan secara real-time. Sistem ini memanfaatkan MediaPipe Hand Tracking untuk mendeteksi posisi dan gerakan tangan, yang kemudian digunakan untuk mengontrol dua elemen utama: Arpeggiator dan Drum Machine.
+
+Pada Arpeggiator, tinggi posisi tangan mengatur pitch nada, sementara gerakan pinch gesture mengatur volume suara. Sedangkan Drum Machine menyediakan lima pola ritme drum berbeda yang dapat diaktifkan melalui kombinasi gerakan jari. Selain itu, sistem dilengkapi dengan Audio Reactive Visualizer yang menampilkan efek partikel sesuai intensitas dan ritme musik.
+
+\subsection{Anggota Tim}
+
+Proyek \textbf{Gestune: Musik dari Gerakan Tangan} ini dikembangkan oleh tim yang terdiri dari:
+
+\begin{table}[H]
+\centering
+\caption{Anggota Tim Pengembang}
+\label{tab:team}
+\begin{tabular}{lll}
+\hline
+\textbf{Nama Lengkap} & \textbf{NIM} & \textbf{ID GitHub} \\ \hline
+A Edwin Krisandika Putra & 122140003 & \href{https://github.com/aloisiusedwin}{aloisiusedwin} \\
+Fathan Andi Kartagama & 122140055 & \href{https://github.com/pataanggs}{pataanggs} \\
+Rizki Alfariz Ramadhan & 122140061 & \href{https://github.com/Alfariz11}{Alfariz11} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Fitur Utama}
+
+Aplikasi Gestune memiliki beberapa fitur utama yang memungkinkan pengguna untuk membuat musik dengan gerakan tangan:
+
+\subsubsection{Arpeggiator (Tangan Kiri)}
+\begin{itemize}
+    \item \textbf{Kontrol Pitch}: Tinggi posisi tangan kiri mengatur pitch nada yang dihasilkan. Semakin tinggi posisi tangan, semakin tinggi pitch nada yang dihasilkan.
+    \item \textbf{Kontrol Volume}: Gesture pinch (mendekatkan ibu jari dan telunjuk) mengatur volume suara. Semakin kecil jarak antara ibu jari dan telunjuk, semakin kecil volume suara, begitu juga sebaliknya.
+\end{itemize}
+
+\subsubsection{Drum Machine (Tangan Kanan)}
+Drum Machine menyediakan lima pola ritme drum yang berbeda, yang dapat diaktifkan dengan kombinasi jari yang terangkat:
+\begin{itemize}
+    \item \textbf{Pattern 1 (Basic 4/4)}: Tidak ada jari yang terangkat atau hanya telunjuk
+    \item \textbf{Pattern 2 (With clap)}: Telunjuk + tengah terangkat
+    \item \textbf{Pattern 3 (Syncopated)}: Telunjuk + tengah + manis terangkat
+    \item \textbf{Pattern 4 (Break beat)}: Semua jari kecuali ibu jari terangkat
+    \item \textbf{Pattern 5 (Minimal)}: Semua jari terangkat
+\end{itemize}
+
+\subsubsection{Audio Reactive Visualizer}
+Sistem dilengkapi dengan visualizer yang menampilkan efek partikel secara real-time yang bereaksi terhadap intensitas dan ritme musik yang dihasilkan. Visualizer ini membuat pengalaman pengguna lebih interaktif dan menarik.

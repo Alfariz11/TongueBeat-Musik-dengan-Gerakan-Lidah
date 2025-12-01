@@ -1,0 +1,450 @@
+% BAB IV - PENJELASAN CODE
+\section{Penjelasan Code}
+
+Bagian ini menjelaskan breakdown dari code-code penting dalam aplikasi Gestune beserta fungsinya.
+
+\subsection{Arsitektur Aplikasi}
+
+Aplikasi Gestune terdiri dari beberapa modul utama:
+
+\begin{itemize}
+    \item \textbf{main.py}: Entry point aplikasi dan manajemen lifecycle
+    \item \textbf{hand\_tracker.py}: Deteksi dan tracking gerakan tangan menggunakan MediaPipe
+    \item \textbf{arpeggiator.py}: Sintesis suara dan kontrol pitch untuk tangan kiri
+    \item \textbf{drum\_machine.py}: Pattern sequencer dan drum sounds untuk tangan kanan
+    \item \textbf{gesture\_processor.py}: Bridge antara hand tracking dan music generation
+    \item \textbf{gestune\_ui.py}: User interface menggunakan PyQt6
+\end{itemize}
+
+\subsection{Main Application (main.py)}
+
+File \texttt{main.py} berfungsi sebagai entry point aplikasi dan mengelola lifecycle keseluruhan sistem.
+
+\subsubsection{Inisialisasi Aplikasi}
+
+\begin{lstlisting}[language=Python, caption=Inisialisasi komponen utama]
+class GestuneApplication:
+    def initialize(self) -> bool:
+        # Create Qt application
+        self.app = QApplication(sys.argv)
+        self.app.setApplicationName("Gestune")
+        
+        # Create main window
+        self.window = GestuneUI()
+        
+        # Initialize gesture processor
+        self.processor = GestureProcessor()
+        
+        # Connect signals
+        self._connect_signals()
+        
+        return True
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Membuat Qt application dengan \texttt{QApplication} untuk GUI
+    \item Inisialisasi \texttt{GestuneUI} sebagai window utama
+    \item Membuat \texttt{GestureProcessor} yang akan running di background thread
+    \item Menghubungkan signals antara processor dan UI
+\end{itemize}
+
+\subsubsection{Signal Connections}
+
+\begin{lstlisting}[language=Python, caption=Koneksi signals untuk komunikasi antar komponen]
+def _connect_signals(self):
+    # Processor -> UI signals
+    self.processor.frame_processed.connect(
+        self.window.update_camera_feed
+    )
+    
+    self.processor.drum_hit.connect(
+        self._on_drum_hit
+    )
+    
+    # UI -> Processor signals
+    self.window.bpm_changed.connect(
+        self.processor.set_bpm
+    )
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Menggunakan PyQt6 signals untuk komunikasi thread-safe
+    \item Processor mengirim frame yang sudah diproses ke UI
+    \item UI mengirim perubahan BPM ke processor
+    \item Pattern observer untuk decoupling komponen
+\end{itemize}
+
+
+
+\subsection{Hand Tracking (hand\_tracker.py)}
+
+Modul ini bertanggung jawab untuk mendeteksi dan melacak gerakan tangan menggunakan MediaPipe.
+
+\subsubsection{Inisialisasi MediaPipe}
+
+\begin{lstlisting}[language=Python, caption=Setup MediaPipe Hands]
+class HandTracker:
+    def __init__(self, enable_roi: bool = True):
+        self.mp_hands = mp.solutions.hands
+        
+        self.hands = self.mp_hands.Hands(
+            model_complexity=1,
+            min_detection_confidence=0.7,
+            min_tracking_confidence=0.7,
+            max_num_hands=2
+        )
+        
+        # Define ROI zones
+        self.roi_zones = {
+            'Left': ROIZone(
+                x_min=0.0, x_max=0.5,
+                color=(100, 200, 255),  # Blue
+                name='ARPEGGIATOR ZONE'
+            ),
+            'Right': ROIZone(
+                x_min=0.5, x_max=1.0,
+                color=(255, 100, 150),  # Pink
+                name='DRUM ZONE'
+            )
+        }
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item \texttt{model\_complexity=1}: Menggunakan full model untuk akurasi maksimal
+    \item \texttt{min\_detection\_confidence=0.7}: Hanya hand dengan confidence \u003e 70\% yang dideteksi
+    \item \texttt{max\_num\_hands=2}: Tracking maksimal 2 tangan (kiri dan kanan)
+    \item ROI zones membagi layar menjadi dua: kiri untuk arpeggiator, kanan untuk drums
+\end{itemize}
+
+\subsubsection{Frame Processing}
+
+\begin{lstlisting}[language=Python, caption=Memproses setiap frame untuk deteksi tangan]
+def process_frame(self, frame: np.ndarray) -> Dict:
+    # Convert BGR to RGB
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # Process with MediaPipe
+    self.results = self.hands.process(rgb_frame)
+    
+    # Process detected hands
+    if self.results.multi_hand_landmarks:
+        for hand_landmarks, handedness in zip(
+            self.results.multi_hand_landmarks,
+            self.results.multi_handedness
+        ):
+            hand_label = handedness.classification[0].label
+            
+            # Check if hand is in ROI
+            in_roi = self._is_hand_in_roi(
+                hand_landmarks, hand_label
+            )
+            
+            # Store hand data
+            self.hand_data[hand_label] = {
+                'landmarks': hand_landmarks,
+                'in_roi': in_roi,
+                'center_x': center_x,
+                'center_y': center_y
+            }
+    
+    return self.hand_data
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Convert frame dari BGR (OpenCV) ke RGB (MediaPipe)
+    \item MediaPipe mendeteksi landmarks (21 titik per tangan)
+    \item Classify hand menjadi Left atau Right
+    \item Check apakah tangan berada di ROI zone yang sesuai
+    \item Return dictionary berisi data semua tangan yang terdeteksi
+\end{itemize}
+
+
+
+\subsubsection{Gesture Recognition}
+
+\begin{lstlisting}[language=Python, caption=Deteksi jari yang terangkat]
+def get_fingers_extended(self, hand_label: str) -> List[bool]:
+    landmarks = self.hand_data[hand_label]['landmarks'].landmark
+    
+    # Thumb (horizontal comparison)
+    if hand_label == 'Right':
+        thumb_extended = landmarks[4].x < landmarks[3].x
+    else:
+        thumb_extended = landmarks[4].x > landmarks[3].x
+    
+    # Other fingers (vertical comparison)
+    index_extended = landmarks[8].y < landmarks[6].y
+    middle_extended = landmarks[12].y < landmarks[10].y
+    ring_extended = landmarks[16].y < landmarks[14].y
+    pinky_extended = landmarks[20].y < landmarks[18].y
+    
+    return [thumb_extended, index_extended, 
+            middle_extended, ring_extended, pinky_extended]
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Untuk \textbf{ibu jari}: membandingkan posisi x (horizontal) karena ibu jari membuka ke samping
+    \item Untuk \textbf{jari lainnya}: membandingkan posisi y (vertical) - tip harus di atas PIP joint
+    \item Return list of booleans: [thumb, index, middle, ring, pinky]
+    \item Digunakan untuk kontrol drum machine (setiap jari = drum berbeda)
+\end{itemize}
+
+\subsubsection{Pinch Gesture Detection}
+
+\begin{lstlisting}[language=Python, caption=Mendeteksi jarak pinch untuk volume control]
+def get_pinch_distance(self, hand_label: str) -> float:
+    thumb = self.hand_data[hand_label]['thumb_tip']
+    index = self.hand_data[hand_label]['index_tip']
+    
+    # Calculate 3D Euclidean distance
+    distance = np.sqrt(
+        (thumb.x - index.x)**2 +
+        (thumb.y - index.y)**2 +
+        (thumb.z - index.z)**2
+    )
+    
+    # Apply smoothing
+    return self._smooth_value(f'{hand_label}_pinch', distance)
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Menghitung jarak 3D antara ujung ibu jari dan telunjuk
+    \item Menggunakan formula Euclidean distance dengan komponen x, y, dan z
+    \item Smoothing diterapkan untuk mengurangi jitter/noise
+    \item Jarak ini dimap ke volume (pinch rapat = volume kecil)
+\end{itemize}
+
+
+
+\subsection{Arpeggiator (arpeggiator.py)}
+
+Modul untuk sintesis suara dan kontrol pitch menggunakan tangan kiri.
+
+\subsubsection{Waveform Generation}
+
+\begin{lstlisting}[language=Python, caption=Menghasilkan waveform audio]
+def generate_waveform(self, frequency: float, t: np.ndarray):
+    if self.waveform == 'rich_sine':
+        # Rich sine with harmonics
+        base = np.sin(2 * np.pi * frequency * t)
+        harmonic1 = 0.3 * np.sin(4 * np.pi * frequency * t)
+        harmonic2 = 0.15 * np.sin(6 * np.pi * frequency * t)
+        wave = base + harmonic1 + harmonic2
+        
+    elif self.waveform == 'square':
+        wave = np.sign(np.sin(2 * np.pi * frequency * t))
+        
+    elif self.waveform == 'saw':
+        wave = 2 * (t * frequency - np.floor(t * frequency + 0.5))
+    
+    return wave / np.max(np.abs(wave))
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item \textbf{Rich Sine}: Sine wave utama + harmonics untuk suara yang lebih "warm"
+    \item \textbf{Square}: Waveform kotak untuk suara yang lebih "bright" dan "harsh"
+    \item \textbf{Sawtooth}: Waveform gigi gergaji untuk suara yang kaya harmonik
+    \item Normalisasi di akhir untuk mencegah clipping
+\end{itemize}
+
+\subsubsection{MIDI to Frequency Conversion}
+
+\begin{lstlisting}[language=Python, caption=Konversi MIDI note ke frequency]
+def midi_to_freq(self, midi_note: int) -> float:
+    # A4 (MIDI 69) = 440 Hz
+    # Formula: f = 440 * 2^((n-69)/12)
+    return 440.0 * (2.0 ** ((midi_note - 69) / 12.0))
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Menggunakan equal temperament tuning system
+    \item A4 (MIDI note 69) adalah reference frequency 440 Hz
+    \item Setiap semitone adalah faktor $2^{1/12}$ dari frequency sebelumnya
+    \item Contoh: C4 (MIDI 60) = 261.63 Hz
+\end{itemize}
+
+
+
+\subsection{Drum Machine (drum\_machine.py)}
+
+Modul untuk drum pattern sequencer yang dikontrol oleh tangan kanan.
+
+\subsubsection{Pattern Initialization}
+
+\begin{lstlisting}[language=Python, caption=Definisi drum patterns]
+def _initialize_patterns(self):
+    self.patterns = {
+        1: {  # Basic 4/4
+            'kick':  {0: 1.0, 4: 0.8, 8: 1.0, 12: 0.8},
+            'snare': {4: 1.0, 12: 1.0},
+            'hihat': {i: 0.6 for i in range(16) if i % 2 == 0}
+        },
+        2: {  # With clap
+            'kick':  {0: 1.0, 6: 0.7, 8: 1.0, 14: 0.7},
+            'snare': {4: 1.0, 12: 1.0},
+            'hihat': {i: 0.5 if i % 2 == 0 else 0.3 
+                      for i in range(16)}
+        }
+        # ... more patterns
+    }
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Setiap pattern adalah dictionary dengan key = nama drum
+    \item Value adalah dictionary: {step\_number: velocity}
+    \item Step 0-15 = 16th notes dalam 1 bar (4/4 time)
+    \item Velocity 0.0-1.0 mengontrol loudness dari hit
+\end{itemize}
+
+\subsubsection{Update Loop with Swing}
+
+\begin{lstlisting}[language=Python, caption=Sequencer update dengan swing timing]
+def update(self, fingers_extended: List[bool], current_time: float):
+    # Determine pattern from finger count
+    extended_count = sum(fingers_extended)
+    pattern_index = min(extended_count + 1, 5)
+    
+    # Calculate time since last step
+    step_duration = self._get_step_duration(self.current_step)
+    time_since_step = current_time - self.last_step_time
+    
+    # Advance to next step if enough time passed
+    if time_since_step >= step_duration:
+        self.current_step = (self.current_step + 1) % 16
+        self.last_step_time = current_time
+        
+        # Play drums for this step
+        drums_hit = []
+        pattern = self.patterns[pattern_index]
+        for drum_name, steps in pattern.items():
+            if self.current_step in steps:
+                velocity = steps[self.current_step]
+                self._play_drum(drum_name, velocity, current_time)
+                drums_hit.append(drum_name)
+        
+        return {'step': self.current_step, 'drums': drums_hit}
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Pattern dipilih berdasarkan jumlah jari yang terangkat (0-5 jari = pattern 1-5)
+    \item Swing diterapkan dengan mengubah durasi step genap/ganjil
+    \item Sequencer advance ke step berikutnya setelah durasi terlewati
+    \item Semua drum yang ada di step saat ini dimainkan dengan velocity-nya
+\end{itemize}
+
+
+
+\subsection{Gesture Processor (gesture\_processor.py)}
+
+Modul yang menghubungkan hand tracking dengan music generation, berjalan di background thread.
+
+\subsubsection{Main Processing Loop}
+
+\begin{lstlisting}[language=Python, caption=Loop utama pemrosesan gesture]
+def run(self):
+    while self.running:
+        ret, frame = self.cap.read()
+        if not ret:
+            continue
+        
+        # Mirror frame
+        frame = cv2.flip(frame, 1)
+        
+        # Process frame
+        self._process_frame(frame)
+        
+        # Calculate FPS
+        self._update_fps()
+        
+        # Emit processed frame
+        self.frame_processed.emit(frame)
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Loop berjalan di QThread terpisah (tidak blocking UI)
+    \item Frame di-mirror untuk user experience yang lebih natural
+    \item \texttt{\_process\_frame} melakukan hand tracking dan music generation
+    \item Frame yang sudah diproses dikirim ke UI via signal
+\end{itemize}
+
+\subsubsection{Arpeggiator Control}
+
+\begin{lstlisting}[language=Python, caption=Kontrol arpeggiator dengan tangan kiri]
+def _process_arpeg giator(self, hand_info: Dict, frame_shape: Tuple):
+    # Get hand height (for pitch)
+    hand_height = self.hand_tracker.get_hand_height('Left')
+    
+    # Get pinch distance (for volume)
+    pinch_distance = self.hand_tracker.get_pinch_distance('Left')
+    
+    # Map pinch to volume (0.03-0.15 range -> 0-1)
+    volume = 1.0 - np.clip(
+        (pinch_distance - 0.03) / 0.12, 0.0, 1.0
+    )
+    
+    # Update arpeggiator
+    result = self.arpeggiator.update(
+        hand_height=hand_height,
+        pinch_distance=pinch_distance,
+        current_time=time.time(),
+        bpm=self.current_bpm
+    )
+    
+    if result:
+        self.note_played.emit(result['note'], result['volume'])
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item \textbf{Hand height} (0-1) dimap ke MIDI notes untuk pitch control
+    \item \textbf{Pinch distance} dimap ke volume (rapat = 0, jauh = 1)
+    \item Arpeggiator menghasilkan notes dengan timing sesuai BPM
+    \item Signal \texttt{note\_played} dikirim ke UI untuk visualization
+\end{itemize}
+
+
+
+\subsubsection{Drum Control}
+
+\begin{lstlisting}[language=Python, caption=Kontrol drum machine dengan tangan kanan]
+def _process_drums(self, hand_info: Dict, frame_shape: Tuple):
+    # Get finger extension status
+    fingers = self.hand_tracker.get_fingers_extended('Right')
+    
+    # Check for fist (pattern change)
+    is_fist = self.hand_tracker.is_fist('Right')
+    
+    # Update drum machine
+    result = self.drum_machine.update(
+        fingers_extended=fingers,
+        current_time=time.time(),
+        is_fist=is_fist
+    )
+    
+    # Emit drum hits
+    if 'drums' in result:
+        for drum_name in result['drums']:
+            velocity = 1.0  # Could be extracted from pattern
+            self.drum_hit.emit(drum_name, velocity)
+\end{lstlisting}
+
+\textbf{Penjelasan}:
+\begin{itemize}
+    \item Deteksi jari mana saja yang terangkat (5 booleans)
+    \item Jumlah jari terangkat menentukan pattern mana yang aktif
+    \item Fist gesture digunakan untuk cycle ke pattern berikutnya
+    \item Signal \texttt{drum\_hit} dikirim untuk setiap drum yang dimainkan
+\end{itemize}
+
+\newpage

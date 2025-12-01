@@ -1,0 +1,91 @@
+% BAB II - INSTALASI
+\section{Instalasi}
+
+\subsection{Prasyarat}
+
+Sebelum melakukan instalasi, pastikan sistem Anda memenuhi prasyarat berikut:
+
+\begin{itemize}
+    \item \textbf{Python}: Versi 3.8 atau lebih tinggi
+    \item \textbf{Webcam}: Diperlukan untuk hand tracking
+    \item \textbf{Sistem Operasi}: Windows, macOS, atau Linux
+\end{itemize}
+
+\subsection{Langkah Instalasi}
+
+Ikuti langkah-langkah berikut untuk menginstall aplikasi Gestune:
+
+\subsubsection{Clone Repository}
+Langkah pertama adalah meng-clone repository dari GitHub:
+
+\begin{lstlisting}[language=bash]
+git clone https://github.com/Alfariz11/Gestune-Musik-dari-gerakan-tangan.git
+cd Gestune-Musik-dari-gerakan-tangan
+\end{lstlisting}
+
+\subsubsection{Membuat Virtual Environment}
+
+\textbf{Sangat disarankan menggunakan UV} - sebuah virtual environment manager yang lebih cepat dan modern.
+
+\paragraph{Instalasi UV (Disarankan)}
+
+Langkah pertama adalah menginstall UV:
+
+\textbf{Untuk Windows:}
+\begin{lstlisting}[language=bash]
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+\end{lstlisting}
+
+\textbf{Untuk macOS/Linux:}
+\begin{lstlisting}[language=bash]
+curl -LsSf https://astral.sh/uv/install.sh | sh
+\end{lstlisting}
+
+Setelah UV terinstall, buat dan aktifkan virtual environment:
+
+\begin{lstlisting}[language=bash]
+# Buat virtual environment
+uv venv
+
+# Aktifkan virtual environment
+# Windows:
+.venv\Scripts\activate
+
+# macOS/Linux:
+source .venv/bin/activate
+\end{lstlisting}
+
+\paragraph{Alternatif: Python venv (Traditional)}
+
+Jika tidak ingin menggunakan UV, Anda dapat menggunakan venv bawaan Python:
+
+\textbf{Untuk Windows:}
+\begin{lstlisting}[language=bash]
+python -m venv venv
+venv\Scripts\activate
+\end{lstlisting}
+
+\textbf{Untuk macOS/Linux:}
+\begin{lstlisting}[language=bash]
+python3 -m venv venv
+source venv/bin/activate
+\end{lstlisting}
+
+\textit{Catatan: UV jauh lebih cepat dalam instalasi dependencies dan manajemen environment. Dokumentasi lengkap UV tersedia di \url{https://docs.astral.sh/uv/}}
+
+\subsubsection{Install Dependencies}
+Setelah virtual environment aktif, install semua dependencies yang diperlukan:
+
+\begin{lstlisting}[language=bash]
+pip install -r requirements.txt
+\end{lstlisting}
+
+\subsection{Verifikasi Instalasi}
+
+Untuk memverifikasi bahwa audio berfungsi dengan baik, Anda dapat menjalankan script testing:
+
+\begin{lstlisting}[language=bash]
+python test_drums.py
+\end{lstlisting}
+
+Jika Anda mendengar suara drum, maka instalasi telah berhasil.

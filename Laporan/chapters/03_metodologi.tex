@@ -1,0 +1,93 @@
+% BAB III - CARA PENGGUNAAN
+\section{Cara Penggunaan}
+
+\subsection{Menjalankan Aplikasi}
+
+Untuk menjalankan aplikasi Gestune, ikuti langkah-langkah berikut:
+
+\subsubsection{Jalankan Aplikasi Utama}
+Jalankan file \texttt{main.py} dengan perintah:
+
+\begin{lstlisting}[language=bash]
+python main.py
+\end{lstlisting}
+
+\subsubsection{Pengaturan Webcam}
+\begin{itemize}
+    \item Pastikan webcam Anda aktif dan terhubung dengan baik
+    \item Posisikan diri Anda di depan webcam dengan pencahayaan yang cukup
+    \item Pastikan kedua tangan terlihat jelas dalam frame kamera
+\end{itemize}
+
+\subsection{Kontrol Aplikasi}
+
+\subsubsection{Tangan Kiri - Arpeggiator}
+Tangan kiri digunakan untuk mengontrol Arpeggiator dengan dua cara:
+
+\begin{enumerate}
+    \item \textbf{Mengatur Pitch Nada}
+    \begin{itemize}
+        \item Naikkan tangan untuk mendapatkan nada yang lebih tinggi
+        \item Turunkan tangan untuk mendapatkan nada yang lebih rendah
+        \item Pitch nada akan berubah secara gradual mengikuti posisi vertikal tangan
+    \end{itemize}
+    
+    \item \textbf{Mengatur Volume}
+    \begin{itemize}
+        \item Lakukan gesture pinch dengan mendekatkan ibu jari dan telunjuk
+        \item Semakin kecil jarak antara ibu jari dan telunjuk, semakin kecil volume
+        \item Semakin besar jarak antara ibu jari dan telunjuk, semakin besar volume
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Tangan Kanan - Drum Machine}
+Tangan kanan digunakan untuk mengontrol Drum Machine dengan lima pola ritme berbeda:
+
+\begin{table}[H]
+\centering
+\caption{Pola Drum Machine}
+\label{tab:drum-patterns}
+\begin{tabular}{lll}
+\hline
+\textbf{Gesture} & \textbf{Pattern} & \textbf{Deskripsi} \\ \hline
+Tidak ada jari / Telunjuk & Pattern 1 & Basic 4/4 \\
+Telunjuk + Tengah & Pattern 2 & With clap \\
+Telunjuk + Tengah + Manis & Pattern 3 & Syncopated \\
+Semua kecuali ibu jari & Pattern 4 & Break beat \\
+Semua jari & Pattern 5 & Minimal \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Kontrol Keyboard}
+Selain kontrol dengan tangan, terdapat juga kontrol keyboard:
+
+\begin{itemize}
+    \item \textbf{Q atau ESC}: Keluar dari aplikasi
+\end{itemize}
+
+\subsection{Tips Penggunaan}
+
+Untuk mendapatkan pengalaman terbaik saat menggunakan aplikasi Gestune, perhatikan tips berikut:
+
+\begin{enumerate}
+    \item \textbf{Pencahayaan}: Pastikan ruangan memiliki pencahayaan yang cukup agar hand tracking dapat mendeteksi tangan dengan optimal
+    
+    \item \textbf{Jarak dengan Webcam}: Jaga jarak yang nyaman dengan webcam (sekitar 50-100 cm)
+    
+    \item \textbf{Posisi Tangan}: Pastikan kedua tangan terlihat jelas dalam frame kamera dan tidak tertutup oleh objek lain
+    
+    \item \textbf{Gerakan}: Lakukan gerakan dengan smooth dan tidak terlalu cepat agar sistem dapat mendeteksi dengan akurat
+    
+    \item \textbf{Visualizer}: Perhatikan Audio Reactive Visualizer yang menampilkan efek partikel sesuai intensitas dan ritme musik yang sedang dimainkan
+\end{enumerate}
+
+\subsection{Troubleshooting}
+
+Jika mengalami masalah saat menggunakan aplikasi, coba solusi berikut:
+
+\begin{itemize}
+    \item \textbf{Tangan tidak terdeteksi}: Perbaiki pencahayaan atau sesuaikan jarak dengan webcam
+    \item \textbf{Audio tidak keluar}: Periksa pengaturan audio sistem Anda atau jalankan \texttt{test\_drums.py} untuk verifikasi
+    \item \textbf{Aplikasi lambat}: Tutup aplikasi lain yang berjalan untuk mengalokasikan lebih banyak resource
+\end{itemize}

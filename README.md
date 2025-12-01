@@ -10,17 +10,18 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
 
 ## 👨‍💻 Anggota Tim
 
-| Nama Lengkap | NIM | ID GitHub |
-|---------------|-----|-----------|
-| A Edwin Krisandika Putra | 122140003 |[@aloisiusedwin]( https://github.com/aloisiusedwin) |
-| Fathan Andi Kartagama | 122140055 |[@pataanggs]( https://github.com/pataanggs) |
-| Rizki Alfariz Ramadhan | 122140061 | [@Alfariz11](https://github.com/Alfariz11) |
+| Nama Lengkap             | NIM       | ID GitHub                                          |
+| ------------------------ | --------- | -------------------------------------------------- |
+| A Edwin Krisandika Putra | 122140003 | [@aloisiusedwin](https://github.com/aloisiusedwin) |
+| Fathan Andi Kartagama    | 122140055 | [@pataanggs](https://github.com/pataanggs)         |
+| Rizki Alfariz Ramadhan   | 122140061 | [@Alfariz11](https://github.com/Alfariz11)         |
 
 ---
 
 ## 🚀 Instalasi
 
 ### Prasyarat
+
 - Python 3.8 atau lebih tinggi
 - Webcam (untuk hand tracking)
 - Sistem Operasi: Windows, macOS, atau Linux
@@ -28,12 +29,14 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
 ### Langkah Instalasi
 
 1. **Clone repository**
+
    ```bash
-   git clone https://github.com/username/TongueBeat-Musik-dengan-Gerakan-Lidah.git
-   cd TongueBeat-Musik-dengan-Gerakan-Lidah
+   git clone https://github.com/Alfariz11/Gestune-Musik-dari-gerakan-tangan.git
+   cd Gestune-Musik-dari-gerakan-tangan
    ```
 
 2. **Buat virtual environment (disarankan)**
+
    ```bash
    # Windows
    python -m venv venv
@@ -56,6 +59,7 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
 ### Menjalankan Aplikasi
 
 1. **Jalankan aplikasi utama**
+
    ```bash
    python main.py
    ```
@@ -69,32 +73,34 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
 ### Kontrol Aplikasi
 
 #### Tangan Kiri (Arpeggiator)
-- **Posisi Naik/Turun**: Mengatur pitch nada (semakin tinggi tangan, semakin tinggi pitch).
-- **Gesture Pinch (Ibu Jari + Telunjuk)**: Mengatur volume suara.
 
-#### Tangan Kanan (Drum Machine & Global Control)
-- **Jari Terbuka**: Mengaktifkan instrumen drum (Mute/Unmute):
-  - Ibu Jari: Kick
-  - Telunjuk: Snare
-  - Tengah: Hi-hat
-  - Manis: High Tom
-  - Kelingking: Crash Cymbal
-- **Kepalan Tangan (Fist)**: Mengganti Pattern Drum (Next Pattern).
-- **Gesture Pinch (Ibu Jari + Telunjuk)**: Mengatur BPM.
-  - Tahan Pinch untuk membuka kunci pengaturan BPM.
-  - Gerakkan tangan naik/turun sambil pinch untuk mengubah kecepatan tempo.
+- **Naikkan/turunkan tangan**: Mengatur pitch nada (semakin tinggi tangan, semakin tinggi pitch)
+- **Gesture pinch (ibu jari + telunjuk)**: Mengatur volume suara, semakin kecil jarak ibu jari dan telunjuk semakin kecil, begitu juga sebaliknya
+
+#### Tangan Kanan (Drum Machine)
+
+- **Tidak ada jari terangkat**: Pattern 1 (Basic 4/4)
+- **Telunjuk**: Pattern 1 (Basic 4/4)
+- **Telunjuk + Tengah**: Pattern 2 (With clap)
+- **Telunjuk + Tengah + Manis**: Pattern 3 (Syncopated)
+- **Semua kecuali ibu jari**: Pattern 4 (Break beat)
+- **Semua jari**: Pattern 5 (Minimal)
 
 #### Keyboard Controls
+
 - **Q atau ESC**: Keluar dari aplikasi
 
 ### Tips Penggunaan
+
 - Pastikan pencahayaan yang cukup agar hand tracking berfungsi optimal
 - Jaga jarak yang nyaman dengan webcam
 - Pastikan kedua tangan terlihat jelas dalam frame kamera
 - Visualizer akan menampilkan efek partikel sesuai intensitas dan ritme musik
 
 ### Testing Audio
+
 Untuk memverifikasi audio berfungsi dengan baik, jalankan:
+
 ```bash
 python test_drums.py
 ```
@@ -103,12 +109,14 @@ python test_drums.py
 
 ## 📅 Logbook Mingguan
 
-| Tanggal | Kegiatan | Hasil / Progress |
-|---------|-----------|------------------|
-| 10/28/2025 | Pembuatan Repositori github Tugas Besar | Repositori github tugas besar berhasil dibuat dengan struktur awal proyek |
-| 11/2/2025 | Implementasi Komponen Utama & Integrasi Aplikasi | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (5 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen di main application. Perbaikan audio system dengan real audio samples, optimisasi code, Custom BPM feature |
-| 11/9/2025 | Integrasi PyGame pada proyek dan penambahan fitur | Integrasi Proyek (Visualizer) dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi |
-| 11/14/2025 | UI baru menggunakan PyQT6, fixing bugs | UI baru menggunakan PyQT6, fixing bugs |
-| 11/28/2025 | Perubahan asset dan pattern pada drum| Perubahan asset dan pattern pada drum machine berhasil |
-| 11/30/2025 | Remake Pinch BPM Controller | Menerapkan Pinch BPM pada UI baru dan meng-sinkronkan perubahan BPM dengan UI & slider |
+| Tanggal    | Kegiatan                                          | Hasil / Progress                                                                                                                                                                                                                                                     |
+| ---------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 10/28/2025 | Pembuatan Repositori github Tugas Besar           | Repositori github tugas besar berhasil dibuat dengan struktur awal proyek                                                                                                                                                                                            |
+| 11/2/2025  | Implementasi Komponen Utama & Integrasi Aplikasi  | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (5 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen di main application. Perbaikan audio system dengan real audio samples, optimisasi code, Custom BPM feature |
+| 11/9/2025  | Integrasi PyGame pada proyek dan penambahan fitur | Integrasi Proyek (Visualizer) dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi                                                                                                                                          |
+| 11/14/2025 | UI baru menggunakan PyQT6, fixing bugs            | UI baru menggunakan PyQT6, fixing bugs                                                                                                                                                                                                                               |
+| 11/28/2025 | Perubahan asset dan pattern pada drum             | Perubahan asset dan pattern pada drum machine berhasil                                                                                                                                                                                                               |
+| 11/30/2025 | Remake Pinch BPM Controller                       | Menerapkan Pinch BPM pada UI baru dan meng-sinkronkan perubahan BPM dengan UI & slider                                                                                                                                                                               |
+| 12/01/2025 | Update dokumentasi laporan final proyek           | Update dokumentasi laporan final                                                                                                                                                                                                                                     |
+
 ---
