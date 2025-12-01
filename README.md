@@ -1,10 +1,28 @@
-# 🥁 "Gestune: Musik dari gerakan tangan"
+# 🎵 Gestune: Musik dari Gerakan Tangan
 
 ---
 
 ## 🎶 Deskripsi Proyek
 
-Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilkan musik hanya dengan gerakan tangan secara real-time. Sistem ini memanfaatkan MediaPipe Hand Tracking untuk mendeteksi posisi dan gerakan tangan, yang kemudian digunakan untuk mengontrol dua elemen utama: Arpeggiator dan Drum Machine. Pada Arpeggiator, tinggi posisi tangan mengatur pitch nada, sementara gerakan pinch gesture mengatur volume suara. Sedangkan Drum Machine menyediakan lima pola ritme drum berbeda yang dapat diaktifkan melalui kombinasi gerakan jari. Selain itu, sistem dilengkapi dengan Audio Reactive Visualizer yang menampilkan efek partikel sesuai intensitas dan ritme musik.
+**Gestune** adalah aplikasi musik interaktif yang memungkinkan pengguna menciptakan musik secara real-time menggunakan gerakan tangan. Memanfaatkan teknologi **MediaPipe Hand Tracking** dan **PyQt6**, aplikasi ini mendeteksi posisi dan gerakan tangan untuk mengontrol dua instrumen musik virtual:
+
+### 🎹 Arpeggiator (Tangan Kiri)
+- **Pitch Control**: Tinggi posisi tangan mengatur nada (3 oktaf penuh)
+- **Volume Control**: Pinch gesture (jarak ibu jari & telunjuk) mengatur volume
+- **BPM Control**: Pinch gesture + gerakan vertikal untuk mengatur tempo (40-200 BPM)
+- Sintesis audio real-time dengan waveform kaya harmonik
+
+### 🥁 Drum Machine (Tangan Kanan)
+- **5 Instrumen Drum**: Setiap jari mengontrol satu instrumen (Kick, Snare, Hi-hat, Tom, Crash)
+- **7 Pola Drum**: Beragam pattern dari Modern Pop hingga Trap Beat
+- **Pattern Switching**: Gesture tinju untuk mengganti pola drum
+- **16-Step Sequencer**: Dengan dukungan swing dan velocity control
+
+### 🎨 Fitur Visual
+- UI modern dengan dark theme menggunakan PyQt6
+- Live camera feed dengan hand tracking overlay
+- Visualisasi drum hits real-time dengan animasi
+- Performance metrics (FPS, hand detection status)
 
 ---
 
@@ -22,9 +40,11 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
 
 ### Prasyarat
 
-- Python 3.8 atau lebih tinggi
-- Webcam (untuk hand tracking)
-- Sistem Operasi: Windows, macOS, atau Linux
+- **Python 3.8** atau lebih tinggi
+- **Webcam** (untuk hand tracking)
+- **Sistem Operasi**: Windows, macOS, atau Linux
+- **RAM**: Minimal 4GB (disarankan 8GB)
+- **Processor**: Dual-core atau lebih tinggi
 
 ### Langkah Instalasi
 
@@ -52,71 +72,110 @@ Proyek ini mengembangkan sistem multimedia yang memungkinkan pengguna menghasilk
    pip install -r requirements.txt
    ```
 
+4. **Verifikasi instalasi** (opsional)
+   ```bash
+   python test_drums.py
+   ```
+
 ---
 
 ## 📖 Penggunaan
 
 ### Menjalankan Aplikasi
 
-1. **Jalankan aplikasi utama**
+1. **Aktifkan virtual environment** (jika menggunakan venv)
+
+   ```bash
+   # Windows
+   venv\Scripts\activate
+
+   # macOS/Linux
+   source venv/bin/activate
+   ```
+
+2. **Jalankan aplikasi utama**
 
    ```bash
    python main.py
    ```
 
-2. **Pastikan webcam Anda aktif dan terhubung**
+3. **Interface akan muncul** dengan:
+   - Live camera feed di sisi kiri
+   - Kontrol panel di sisi kanan
+   - Status indicator untuk deteksi tangan
+   - BPM control dan pattern selector
 
-3. **Posisikan tangan Anda di depan webcam:**
-   - **Tangan Kiri**: Kontrol Arpeggiator
-   - **Tangan Kanan**: Kontrol Drum Machine
+4. **Mulai bermain musik**:
+   - Posisikan tangan kiri di zona biru untuk kontrol melodi
+   - Posisikan tangan kanan di zona pink untuk kontrol drum
+   - Eksperimen dengan berbagai gesture dan pattern!
 
-### Kontrol Aplikasi
+### 🎮 Kontrol Aplikasi
 
-#### Tangan Kiri (Arpeggiator)
+#### 👈 Tangan Kiri - Arpeggiator Zone (Area Biru)
 
-- **Naikkan/turunkan tangan**: Mengatur pitch nada (semakin tinggi tangan, semakin tinggi pitch)
-- **Gesture pinch (ibu jari + telunjuk)**: Mengatur volume suara, semakin kecil jarak ibu jari dan telunjuk semakin kecil, begitu juga sebaliknya
+- **🎹 Pitch Control**: Gerakkan tangan naik/turun untuk mengubah nada
+  - Semakin tinggi tangan = nada semakin tinggi
+  - Range: 3 oktaf penuh (C2 - C5)
+  
+- **🎚️ Volume Control**: Pinch gesture (pertemukan ibu jari & telunjuk)
+  - Semakin rapat jari = volume semakin kecil
+  - Semakin renggang = volume semakin besar
+  
+- **⏱️ BPM Control**: Pinch rapat + gerakkan tangan naik/turun
+  - Unlock BPM dengan pinch yang sangat rapat
+  - Gerakkan tangan untuk mengatur tempo (40-200 BPM)
 
-#### Tangan Kanan (Drum Machine)
+#### 👉 Tangan Kanan - Drum Machine Zone (Area Pink)
 
-- **Tidak ada jari terangkat**: Pattern 1 (Basic 4/4)
-- **Telunjuk**: Pattern 1 (Basic 4/4)
-- **Telunjuk + Tengah**: Pattern 2 (With clap)
-- **Telunjuk + Tengah + Manis**: Pattern 3 (Syncopated)
-- **Semua kecuali ibu jari**: Pattern 4 (Break beat)
-- **Semua jari**: Pattern 5 (Minimal)
+**Kontrol Instrumen** (setiap jari = 1 instrumen):
+- **👍 Jempol** → Kick Drum
+- **☝️ Telunjuk** → Snare Drum
+- **🖕 Jari Tengah** → Hi-Hat
+- **💍 Jari Manis** → High Tom
+- **🤙 Kelingking** → Crash Cymbal
 
-#### Keyboard Controls
+**Ganti Pattern**:
+- **✊ Tinju/Fist** (semua jari tertutup) → Berpindah ke pattern berikutnya
+- Total 7 pattern drum tersedia
 
-- **Q atau ESC**: Keluar dari aplikasi
+#### ⌨️ Kontrol Keyboard
 
-### Tips Penggunaan
+- **Q** atau **ESC**: Keluar dari aplikasi
+- **Slider BPM**: Geser untuk mengatur tempo manual
+- **Pattern Buttons**: Klik untuk ganti pattern drum langsung
 
-- Pastikan pencahayaan yang cukup agar hand tracking berfungsi optimal
-- Jaga jarak yang nyaman dengan webcam
-- Pastikan kedua tangan terlihat jelas dalam frame kamera
-- Visualizer akan menampilkan efek partikel sesuai intensitas dan ritme musik
+### 💡 Tips Penggunaan
 
-### Testing Audio
+- ✅ Pastikan pencahayaan ruangan cukup terang untuk tracking optimal
+- ✅ Posisikan diri pada jarak 50-100 cm dari webcam
+- ✅ Jaga agar kedua tangan berada dalam frame kamera
+- ✅ Tangan kiri di zona biru (sisi kiri), tangan kanan di zona pink (sisi kanan)
+- ✅ Gerakkan tangan dengan smooth untuk hasil audio yang halus
+- ✅ Eksperimen dengan berbagai pattern drum untuk menemukan ritme favorit
 
-Untuk memverifikasi audio berfungsi dengan baik, jalankan:
+### 🧪 Testing Audio
+
+Untuk memverifikasi sistem audio berfungsi dengan baik:
 
 ```bash
 python test_drums.py
 ```
 
+Program ini akan memutar semua sampel drum secara berurutan untuk memastikan tidak ada masalah audio.
+
 ---
 
 ## 📅 Logbook Mingguan
 
-| Tanggal    | Kegiatan                                          | Hasil / Progress                                                                                                                                                                                                                                                     |
-| ---------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 10/28/2025 | Pembuatan Repositori github Tugas Besar           | Repositori github tugas besar berhasil dibuat dengan struktur awal proyek                                                                                                                                                                                            |
-| 11/2/2025  | Implementasi Komponen Utama & Integrasi Aplikasi  | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (5 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen di main application. Perbaikan audio system dengan real audio samples, optimisasi code, Custom BPM feature |
-| 11/9/2025  | Integrasi PyGame pada proyek dan penambahan fitur | Integrasi Proyek (Visualizer) dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi                                                                                                                                          |
-| 11/14/2025 | UI baru menggunakan PyQT6, fixing bugs            | UI baru menggunakan PyQT6, fixing bugs                                                                                                                                                                                                                               |
-| 11/28/2025 | Perubahan asset dan pattern pada drum             | Perubahan asset dan pattern pada drum machine berhasil                                                                                                                                                                                                               |
-| 11/30/2025 | Remake Pinch BPM Controller                       | Menerapkan Pinch BPM pada UI baru dan meng-sinkronkan perubahan BPM dengan UI & slider                                                                                                                                                                               |
-| 12/01/2025 | Update dokumentasi laporan final proyek           | Update dokumentasi laporan final                                                                                                                                                                                                                                     |
+| Tanggal    | Kegiatan                                            | Hasil / Progress                                                                                                                                                                                                                                                     |
+| ---------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 10/28/2024 | Pembuatan Repositori GitHub Tugas Besar            | Repositori GitHub tugas besar berhasil dibuat dengan struktur awal proyek                                                                                                                                                                                            |
+| 11/02/2024 | Implementasi Komponen Utama & Integrasi Aplikasi   | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (7 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen. Perbaikan audio system dengan real audio samples, optimisasi code, Custom BPM feature                     |
+| 11/09/2024 | Integrasi PyGame dan Penambahan Fitur              | Integrasi Visualizer dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi dengan efek partikel                                                                                                                              |
+| 11/14/2024 | UI Baru dengan PyQt6 & Bug Fixes                   | Implementasi UI modern menggunakan PyQt6, fixing bugs pada sistem tracking, penambahan kontrol interaktif                                                                                                                                                             |
+| 11/28/2024 | Update Asset dan Pattern Drum                      | Perubahan asset drum dengan kualitas lebih baik, penambahan 2 pattern baru (total 7 pattern), optimisasi audio mixing                                                                                                                                                |
+| 11/30/2024 | Remake Pinch BPM Controller                        | Implementasi kontrol BPM via gesture pinch pada tangan kanan, sinkronisasi perubahan BPM dengan UI slider, smoothing untuk transisi BPM yang halus                                                                                                                   |
+| 12/01/2024 | Update Dokumentasi Laporan Final Proyek            | Update dokumentasi laporan final, perbaikan README, penambahan penjelasan fitur-fitur baru                                                                                                                                                                           |
 
 ---
