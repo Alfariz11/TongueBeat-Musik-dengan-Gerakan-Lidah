@@ -24,7 +24,7 @@ class Arpeggiator:
         """
         try:
             pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
-            pygame.mixer.set_num_channels(polyphony)
+            pygame.mixer.set_num_channels(polyphony * 2)  # Double channels for crossfade
         except pygame.error as e:
             raise RuntimeError(f"Failed to initialize audio: {e}")
         
@@ -32,17 +32,21 @@ class Arpeggiator:
         self.base_midi = 57
         self.volume = 0.2
         self.last_note = None
-        self.current_channels = []
+        self.current_channels = []  # Track multiple channels for smooth transition
         
-        # Timing
+        # Timing - synchronized with drum beat
         self.bpm = 120
-        self.step_duration = 60.0 / self.bpm / 4
+        self.beat_duration = 60.0 / self.bpm  # One full beat duration
+        self.note_duration = self.beat_duration * 1.5  # Extend note for overlap
         self.last_update_time = 0
         
         # Waveform parameters
         self.waveform = waveform
         self.attack = attack
-        self.release = release
+        self.release = release * 2  # Longer release for smooth transition
+        
+        # Volume settings
+        self.master_volume = 0.3  # Master volume multiplier (reduced from default)
         
         # Note caching
         self.note_cache: OrderedDict[Tuple[float, float], pygame.mixer.Sound] = OrderedDict()
@@ -50,6 +54,9 @@ class Arpeggiator:
         
         # Polyphony
         self.polyphony = polyphony
+        
+        # Crossfade settings
+        self.crossfade_duration = 0.05  # 50ms crossfade
         
     def midi_to_freq(self, midi_note: int) -> float:
         """Convert MIDI note number to frequency in Hz."""
@@ -81,18 +88,24 @@ class Arpeggiator:
             return np.sin(2 * np.pi * frequency * t)
     
     def apply_envelope(self, wave: np.ndarray, samples: int) -> np.ndarray:
-        """Apply ADSR-style envelope to the waveform."""
+        """Apply ADSR-style envelope to the waveform with smooth attack and release."""
         envelope = np.ones(samples)
         
-        # Attack
+        # Smooth attack with exponential curve
         attack_samples = int(samples * self.attack)
         if attack_samples > 0:
-            envelope[:attack_samples] = np.linspace(0, 1, attack_samples)
+            attack_curve = np.linspace(0, 1, attack_samples)
+            # Use exponential curve for smoother attack
+            attack_curve = attack_curve ** 2
+            envelope[:attack_samples] = attack_curve
         
-        # Release
+        # Smooth release with exponential curve
         release_samples = int(samples * self.release)
         if release_samples > 0:
-            envelope[-release_samples:] = np.linspace(1, 0, release_samples)
+            release_curve = np.linspace(1, 0, release_samples)
+            # Use exponential curve for smoother release
+            release_curve = release_curve ** 2
+            envelope[-release_samples:] = release_curve
         
         return wave * envelope
     
@@ -150,10 +163,11 @@ class Arpeggiator:
         return self.note_cache[cache_key]
     
     def stop_all_sounds(self):
-        """Stop all currently playing sounds."""
+        """Stop all currently playing sounds with smooth fadeout."""
+        # Fadeout all active channels smoothly
         for channel in self.current_channels:
             if channel and channel.get_busy():
-                channel.fadeout(50)  # 50ms fadeout to prevent clicking
+                channel.fadeout(100)  # 100ms fadeout for smooth stop
         self.current_channels.clear()
     
     def update(
@@ -189,45 +203,57 @@ class Arpeggiator:
         # Calculate volume from pinch distance
         self.volume = np.clip((1.0 - pinch_distance) ** 1.5, 0.05, 0.9)
         
-        # Check if we should play a new note
+        # Apply master volume scaling
+        actual_volume = self.volume * self.master_volume
+        
+        # Check if we should play a new note (one note per beat)
         time_elapsed = current_time - self.last_update_time
         note_changed = midi_note != self.last_note
-        should_trigger = time_elapsed >= self.step_duration
+        should_trigger = time_elapsed >= self.beat_duration
         
-        if should_trigger or (note_changed and time_elapsed > 0.05):
+        # Allow immediate note change if note changed significantly and enough time passed
+        if should_trigger or (note_changed and time_elapsed > self.beat_duration * 0.25):
             self.last_update_time = current_time
             self.last_note = midi_note
             
             # Get frequency
             freq = self.midi_to_freq(midi_note)
             
-            # Get or generate sound
+            # Get or generate sound with duration matching beat
             try:
                 sound = self.get_or_generate_tone(
                     freq, 
-                    duration=self.step_duration * 1.2, 
+                    duration=self.note_duration,
                     volume=1.0  # We'll set volume when playing
                 )
+                
+                # Clean up finished channels
+                self.current_channels = [
+                    ch for ch in self.current_channels 
+                    if ch and ch.get_busy()
+                ]
                 
                 # Find available channel
                 channel = pygame.mixer.find_channel()
                 if channel:
-                    # Stop previous sound on this channel with fadeout
-                    if channel.get_busy():
-                        channel.fadeout(30)
+                    # Fade out old channels smoothly
+                    fadeout_time = int(self.crossfade_duration * 1000)  # Convert to ms
+                    for old_channel in self.current_channels:
+                        if old_channel and old_channel.get_busy():
+                            old_channel.fadeout(fadeout_time)
                     
-                    # Play new sound
-                    sound.set_volume(self.volume)
+                    # Play new sound with reduced volume
+                    sound.set_volume(actual_volume)
                     channel.play(sound)
                     
-                    # Track the channel
+                    # Add to active channels
                     self.current_channels.append(channel)
                     
-                    # Clean up finished channels
-                    self.current_channels = [
-                        ch for ch in self.current_channels 
-                        if ch and ch.get_busy()
-                    ]
+                    # Keep only recent channels (limit to 3 for memory)
+                    if len(self.current_channels) > 3:
+                        oldest = self.current_channels.pop(0)
+                        if oldest and oldest.get_busy():
+                            oldest.stop()
                 
                 return {
                     "note": midi_note,
@@ -243,9 +269,15 @@ class Arpeggiator:
         return None
     
     def set_bpm(self, bpm: int):
-        """Update the BPM and recalculate step duration."""
+        """Update the BPM and recalculate beat duration."""
+        old_bpm = self.bpm
         self.bpm = max(20, min(300, bpm))  # Clamp BPM to reasonable range
-        self.step_duration = 60.0 / self.bpm / 4
+        self.beat_duration = 60.0 / self.bpm  # One beat duration
+        self.note_duration = self.beat_duration * 1.5  # Extend note for smooth overlap
+        
+        # Only clear cache if BPM changed significantly
+        if abs(old_bpm - self.bpm) > 5:
+            self.clear_cache()
     
     def set_waveform(self, waveform: str):
         """Change waveform type and clear cache."""
