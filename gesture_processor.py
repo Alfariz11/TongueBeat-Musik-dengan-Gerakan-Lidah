@@ -356,6 +356,21 @@ class GestureProcessor(QThread):
             
             if self.audio:
                 self.audio.update_drums(active_drums)
+                
+                # Check for fist (pattern change)
+                # We need a cooldown to prevent rapid switching
+                current_time = time.time()
+                is_fist = self.tracker.is_fist(HandSide.RIGHT.value)
+                
+                # Check if enough time passed since last pattern change (e.g., 2 seconds)
+                if not hasattr(self, 'last_pattern_change_time'):
+                    self.last_pattern_change_time = 0
+                
+                if is_fist and (current_time - self.last_pattern_change_time > 2.0):
+                    new_pattern_idx = self.audio.next_pattern()
+                    self.last_pattern_change_time = current_time
+                    self.pattern_changed.emit(new_pattern_idx - 1) # UI expects 0-indexed
+                    print(f"✊ Fist detected! Switching to Pattern {new_pattern_idx}")
             
             # Emit drum hits for UI visualization
             # Since the engine handles timing, we might not know exactly when it hits

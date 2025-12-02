@@ -50,12 +50,11 @@ class AudioEngine:
         self.active_arpeggios = {} # hand_index -> {pattern, current_note_index, ...}
         
         # Drum Pattern State
-        self.drum_pattern = {
-            'kick':  [1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0],
-            'snare': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-            'hihat': [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-            'clap':  [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
-        }
+        # Drum Pattern State
+        self.patterns = self._initialize_patterns()
+        self.current_pattern_index = 0
+        self.drum_pattern = self.patterns[0]
+        self.active_drums = set()
         self.active_drums = set()
         
         # Scheduler State
@@ -79,6 +78,68 @@ class AudioEngine:
             for f in base_freqs:
                 scale.append(f * multiplier)
         return scale
+
+    def _initialize_patterns(self):
+        # Define 7 distinct patterns
+        patterns = []
+        
+        # Pattern 1: Basic Rock
+        patterns.append({
+            'kick':  [1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+            'snare': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+            'hihat': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+            'clap':  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        })
+        
+        # Pattern 2: House
+        patterns.append({
+            'kick':  [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+            'snare': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+            'hihat': [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+            'clap':  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+        })
+        
+        # Pattern 3: Hip Hop
+        patterns.append({
+            'kick':  [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+            'snare': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+            'hihat': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            'clap':  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        })
+        
+        # Pattern 4: Funk
+        patterns.append({
+            'kick':  [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+            'snare': [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1],
+            'hihat': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+            'clap':  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        })
+        
+        # Pattern 5: Breakbeat
+        patterns.append({
+            'kick':  [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+            'snare': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+            'hihat': [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+            'clap':  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        })
+        
+        # Pattern 6: Latin/Bossa
+        patterns.append({
+            'kick':  [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+            'snare': [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0], # Clave-ish
+            'hihat': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            'clap':  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        })
+        
+        # Pattern 7: Trap
+        patterns.append({
+            'kick':  [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+            'snare': [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+            'hihat': [1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1], # Fast hats
+            'clap':  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+        })
+        
+        return patterns
 
     def _precompute_synth_sounds(self):
         sounds = []
@@ -120,6 +181,14 @@ class AudioEngine:
     def _play_step(self, step):
         with self.lock:
             # Play Drums
+            # Play Drums
+            # Check active drums (finger mapping) OR play full pattern if desired
+            # The user wants "Pattern for the drum".
+            # If we just play the pattern, we don't need active_drums?
+            # Or maybe active_drums enables the instrument?
+            # Let's assume active_drums acts as a MUTE/UNMUTE mask for the pattern.
+            # So if you hold "Kick" finger, the Kick track of the pattern plays.
+            
             for drum_name in self.active_drums:
                 if drum_name in self.drum_pattern and self.drum_pattern[drum_name][step]:
                     if drum_name in self.drums:
@@ -149,6 +218,20 @@ class AudioEngine:
     def update_drums(self, active_drums_set):
         with self.lock:
             self.active_drums = active_drums_set
+
+    def next_pattern(self):
+        with self.lock:
+            self.current_pattern_index = (self.current_pattern_index + 1) % len(self.patterns)
+            self.drum_pattern = self.patterns[self.current_pattern_index]
+            print(f"Switched to Pattern {self.current_pattern_index + 1}")
+            return self.current_pattern_index + 1
+
+    def set_pattern(self, index):
+        with self.lock:
+            if 0 <= index < len(self.patterns):
+                self.current_pattern_index = index
+                self.drum_pattern = self.patterns[index]
+                print(f"Set Pattern to {index + 1}")
 
     def start_arpeggio(self, hand_idx, note_index):
         with self.lock:

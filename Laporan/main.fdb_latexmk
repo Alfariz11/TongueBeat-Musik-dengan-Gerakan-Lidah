@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1764690376.36161 "/home/pataangg/Developer/Gestune-Musik-dari-gerakan-tangan/Laporan/main.tex" "main.pdf" "main" 1764690380.13949 0
-  "/home/pataangg/Developer/Gestune-Musik-dari-gerakan-tangan/Laporan/main.tex" 1764587842.18727 4608 15b34abd75b3cdb7355182f8a5b60fd1 ""
+["pdflatex"] 1764690901.4577 "/home/pataangg/Developer/Gestune-Musik-dari-gerakan-tangan/Laporan/main.tex" "main.pdf" "main" 1764690904.97924 0
+  "/home/pataangg/Developer/Gestune-Musik-dari-gerakan-tangan/Laporan/main.tex" 1764690430.34325 4608 15b34abd75b3cdb7355182f8a5b60fd1 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
@@ -259,13 +259,13 @@
   "Figure/ifitera-header.png" 1764586332.9256 105262 e8fcdb14b3bf260763fa92cf2b0e9dc4 ""
   "chapters/01_pendahuluan.tex" 1764690337.896 4120 08e7f0772e20cd7942899adb840bdb44 ""
   "chapters/02_landasan_teori.tex" 1764690375.69139 2494 c4b331a2ab2dfd7b2060c47eab457752 ""
-  "chapters/03_metodologi.tex" 1764690295.9442 3577 f00278fe1c7043f3e8807c0e51710ff9 ""
+  "chapters/03_metodologi.tex" 1764690896.75937 4087 bee690ba6b93f4b0dd2d7ff96898d245 ""
   "chapters/04_hasil_analisis.tex" 1764690274.92115 14038 eabdfa6db38372d1db8cf53ddbf770c4 ""
   "chapters/06_lampiran.tex" 1764690339.07548 2495 659c11355a3a6222f52b5e2a1de919b3 ""
   "chapters/cover.tex" 1764681224.44822 763 b768e4786973b25e8362bd64a47ceea1 ""
-  "main.aux" 1764690379.8984 9441 16f50fac8ae0a41b6e4cd3744f8a7212 "pdflatex"
-  "main.out" 1764690379.9004 7830 e5c4a03fd84ecf7f5d9d1cd6d75f2562 "pdflatex"
-  "main.tex" 1764587842.18727 4608 15b34abd75b3cdb7355182f8a5b60fd1 ""
+  "main.aux" 1764690904.76764 9564 9210a144841af81bb17de8f1f3dd4df1 "pdflatex"
+  "main.out" 1764690904.76964 7830 5d8856e4da9e15502e2954fb6c1bf3e7 "pdflatex"
+  "main.tex" 1764690430.34325 4608 15b34abd75b3cdb7355182f8a5b60fd1 ""
   (generated)
   "main.aux"
   "main.log"
