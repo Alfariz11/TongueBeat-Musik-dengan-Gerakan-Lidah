@@ -68,9 +68,9 @@ class GestuneUI(QMainWindow):
     DRUM_DISPLAY_NAMES = {
         'kick': '🥁 KICK',
         'snare': '🎺 SNARE',
-        'hihat': '🎩 HI-HAT',
+        'hihat': '🛎️ HI-HAT',
         'hightom': '🥁 TOM',
-        'crashcymbal': '💥 CRASH'
+        'crashcymbal': '🔔 CRASH'
     }
     
     DRUM_COLORS = {
