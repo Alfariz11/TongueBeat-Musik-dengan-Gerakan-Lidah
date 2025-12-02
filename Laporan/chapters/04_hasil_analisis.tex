@@ -10,8 +10,7 @@ Aplikasi Gestune terdiri dari beberapa modul utama:
 \begin{itemize}
     \item \textbf{main.py}: Entry point aplikasi dan manajemen lifecycle
     \item \textbf{hand\_tracker.py}: Deteksi dan tracking gerakan tangan menggunakan MediaPipe
-    \item \textbf{arpeggiator.py}: Sintesis suara dan kontrol pitch untuk tangan kiri
-    \item \textbf{drum\_machine.py}: Pattern sequencer dan drum sounds untuk tangan kanan
+    \item \textbf{audio\_engine.py}: Engine audio terpadu untuk sintesis suara dan drum sequencing
     \item \textbf{gesture\_processor.py}: Bridge antara hand tracking dan music generation
     \item \textbf{gestune\_ui.py}: User interface menggunakan PyQt6
 \end{itemize}
@@ -222,124 +221,104 @@ def get_pinch_distance(self, hand_label: str) -> float:
 
 
 
-\subsection{Arpeggiator (arpeggiator.py)}
+\subsection{Audio Engine (audio\_engine.py)}
 
-Modul untuk sintesis suara dan kontrol pitch menggunakan tangan kiri.
+Modul ini menggantikan \texttt{arpeggiator.py} dan \texttt{drum\_machine.py} menjadi satu engine audio terpadu yang menangani sintesis suara dan drum sequencing secara real-time.
 
-\subsubsection{Waveform Generation}
+\subsubsection{Initialization \& Scheduler}
 
-\begin{lstlisting}[language=Python, caption=Menghasilkan waveform audio]
-def generate_waveform(self, frequency: float, t: np.ndarray):
-    if self.waveform == 'rich_sine':
-        # Rich sine with harmonics
-        base = np.sin(2 * np.pi * frequency * t)
-        harmonic1 = 0.3 * np.sin(4 * np.pi * frequency * t)
-        harmonic2 = 0.15 * np.sin(6 * np.pi * frequency * t)
-        wave = base + harmonic1 + harmonic2
+\begin{lstlisting}[language=Python, caption=Inisialisasi Audio Engine dan Scheduler]
+class AudioEngine:
+    def __init__(self, assets_path=None):
+        # Initialize mixer
+        pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
         
-    elif self.waveform == 'square':
-        wave = np.sign(np.sin(2 * np.pi * frequency * t))
+        # Load Drums
+        self.drums = {}
+        # ... load wav files ...
+
+        # Synth State
+        self.scale = self._generate_scale_frequencies()
+        self.synth_sounds = self._precompute_synth_sounds()
         
-    elif self.waveform == 'saw':
-        wave = 2 * (t * frequency - np.floor(t * frequency + 0.5))
-    
-    return wave / np.max(np.abs(wave))
+        # Scheduler State
+        self.bpm = 100
+        self.step_duration = (60 / self.bpm) / 4 # 16th notes
+        
+        # Start Scheduler Thread
+        self.scheduler_thread = threading.Thread(
+            target=self._scheduler_loop, 
+            daemon=True
+        )
+        self.scheduler_thread.start()
 \end{lstlisting}
 
 \textbf{Penjelasan}:
 \begin{itemize}
-    \item \textbf{Rich Sine}: Sine wave utama + harmonics untuk suara yang lebih "warm"
-    \item \textbf{Square}: Waveform kotak untuk suara yang lebih "bright" dan "harsh"
-    \item \textbf{Sawtooth}: Waveform gigi gergaji untuk suara yang kaya harmonik
-    \item Normalisasi di akhir untuk mencegah clipping
+    \item Menggunakan satu thread terpisah (\texttt{scheduler\_loop}) untuk timing yang presisi
+    \item Menggabungkan loading aset drum dan pre-computation suara synth
+    \item Mengatur BPM dan durasi step untuk sinkronisasi
 \end{itemize}
 
-\subsubsection{MIDI to Frequency Conversion}
+\subsubsection{Synthesis \& Precomputation}
 
-\begin{lstlisting}[language=Python, caption=Konversi MIDI note ke frequency]
-def midi_to_freq(self, midi_note: int) -> float:
-    # A4 (MIDI 69) = 440 Hz
-    # Formula: f = 440 * 2^((n-69)/12)
-    return 440.0 * (2.0 ** ((midi_note - 69) / 12.0))
+\begin{lstlisting}[language=Python, caption=Pre-compute suara synthesizer]
+def _precompute_synth_sounds(self):
+    sounds = []
+    for freq in self.scale:
+        # Generate Sine Wave
+        t = np.linspace(0, duration, int(sample_rate * duration), False)
+        wave = np.sin(2 * np.pi * freq * t)
+        
+        # Simple Envelope (Attack/Decay)
+        envelope = np.concatenate([
+            np.linspace(0, 1, int(sample_rate * 0.01)), # Attack
+            np.linspace(1, 0, int(sample_rate * (duration - 0.01))) # Decay
+        ])
+        wave = wave * envelope
+        
+        # Convert to Sound object
+        sound = pygame.sndarray.make_sound(stereo)
+        sounds.append(sound)
+    return sounds
 \end{lstlisting}
 
 \textbf{Penjelasan}:
 \begin{itemize}
-    \item Menggunakan equal temperament tuning system
-    \item A4 (MIDI note 69) adalah reference frequency 440 Hz
-    \item Setiap semitone adalah faktor $2^{1/12}$ dari frequency sebelumnya
-    \item Contoh: C4 (MIDI 60) = 261.63 Hz
+    \item Suara disintesis di awal (pre-compute) untuk mengurangi latency saat runtime
+    \item Menggunakan gelombang sinus sederhana dengan envelope attack/decay
+    \item Disimpan dalam list \texttt{synth\_sounds} yang dipetakan ke index nada
 \end{itemize}
 
+\subsubsection{Sequencer Loop}
 
-
-\subsection{Drum Machine (drum\_machine.py)}
-
-Modul untuk drum pattern sequencer yang dikontrol oleh tangan kanan.
-
-\subsubsection{Pattern Initialization}
-
-\begin{lstlisting}[language=Python, caption=Definisi drum patterns]
-def _initialize_patterns(self):
-    self.patterns = {
-        1: {  # Basic 4/4
-            'kick':  {0: 1.0, 4: 0.8, 8: 1.0, 12: 0.8},
-            'snare': {4: 1.0, 12: 1.0},
-            'hihat': {i: 0.6 for i in range(16) if i % 2 == 0}
-        },
-        2: {  # With clap
-            'kick':  {0: 1.0, 6: 0.7, 8: 1.0, 14: 0.7},
-            'snare': {4: 1.0, 12: 1.0},
-            'hihat': {i: 0.5 if i % 2 == 0 else 0.3 
-                      for i in range(16)}
-        }
-        # ... more patterns
-    }
+\begin{lstlisting}[language=Python, caption=Loop utama sequencer]
+def _play_step(self, step):
+    with self.lock:
+        # Play Drums
+        for drum_name in self.active_drums:
+            if self.drum_pattern[drum_name][step]:
+                if drum_name in self.drums:
+                    self.drums[drum_name].play()
+        
+        # Play Arpeggios
+        for hand_idx, arp_data in self.active_arpeggios.items():
+            root_idx = arp_data['note_index']
+            # Simple Arpeggio Pattern
+            offsets = [0, 2, 4, 2] 
+            offset = offsets[step % 4]
+            
+            note_idx = root_idx + offset
+            if 0 <= note_idx < len(self.synth_sounds):
+                sound = self.synth_sounds[note_idx]
+                sound.play()
 \end{lstlisting}
 
 \textbf{Penjelasan}:
 \begin{itemize}
-    \item Setiap pattern adalah dictionary dengan key = nama drum
-    \item Value adalah dictionary: {step\_number: velocity}
-    \item Step 0-15 = 16th notes dalam 1 bar (4/4 time)
-    \item Velocity 0.0-1.0 mengontrol loudness dari hit
-\end{itemize}
-
-\subsubsection{Update Loop with Swing}
-
-\begin{lstlisting}[language=Python, caption=Sequencer update dengan swing timing]
-def update(self, fingers_extended: List[bool], current_time: float):
-    # Determine pattern from finger count
-    extended_count = sum(fingers_extended)
-    pattern_index = min(extended_count + 1, 5)
-    
-    # Calculate time since last step
-    step_duration = self._get_step_duration(self.current_step)
-    time_since_step = current_time - self.last_step_time
-    
-    # Advance to next step if enough time passed
-    if time_since_step >= step_duration:
-        self.current_step = (self.current_step + 1) % 16
-        self.last_step_time = current_time
-        
-        # Play drums for this step
-        drums_hit = []
-        pattern = self.patterns[pattern_index]
-        for drum_name, steps in pattern.items():
-            if self.current_step in steps:
-                velocity = steps[self.current_step]
-                self._play_drum(drum_name, velocity, current_time)
-                drums_hit.append(drum_name)
-        
-        return {'step': self.current_step, 'drums': drums_hit}
-\end{lstlisting}
-
-\textbf{Penjelasan}:
-\begin{itemize}
-    \item Pattern dipilih berdasarkan jumlah jari yang terangkat (0-5 jari = pattern 1-5)
-    \item Swing diterapkan dengan mengubah durasi step genap/ganjil
-    \item Sequencer advance ke step berikutnya setelah durasi terlewati
-    \item Semua drum yang ada di step saat ini dimainkan dengan velocity-nya
+    \item \texttt{\_play\_step} dipanggil setiap 16th note
+    \item Mengecek \texttt{active\_drums} (drum yang sedang diaktifkan user)
+    \item Memainkan arpeggio berdasarkan root note yang dipilih user
 \end{itemize}
 
 
@@ -381,70 +360,58 @@ def run(self):
 \subsubsection{Arpeggiator Control}
 
 \begin{lstlisting}[language=Python, caption=Kontrol arpeggiator dengan tangan kiri]
-def _process_arpeg giator(self, hand_info: Dict, frame_shape: Tuple):
+def _process_arpeggiator(self, hand_info: Dict, frame_shape: Tuple):
     # Get hand height (for pitch)
-    hand_height = self.hand_tracker.get_hand_height('Left')
+    hand_height = 1.0 - hand_info['wrist_y']
     
     # Get pinch distance (for volume)
-    pinch_distance = self.hand_tracker.get_pinch_distance('Left')
+    pinch_distance = self.tracker.get_pinch_distance(HandSide.LEFT.value)
     
-    # Map pinch to volume (0.03-0.15 range -> 0-1)
-    volume = 1.0 - np.clip(
-        (pinch_distance - 0.03) / 0.12, 0.0, 1.0
-    )
-    
-    # Update arpeggiator
-    result = self.arpeggiator.update(
-        hand_height=hand_height,
-        pinch_distance=pinch_distance,
-        current_time=time.time(),
-        bpm=self.current_bpm
-    )
-    
-    if result:
-        self.note_played.emit(result['note'], result['volume'])
+    # Map height to note index
+    if self.audio:
+        num_notes = len(self.audio.scale)
+        note_index = int(hand_height * num_notes)
+        note_index = max(0, min(note_index, num_notes - 1))
+        
+        # Map pinch to volume
+        volume = max(0.0, min(1.0, (1.0 - pinch_distance)))
+        
+        # Update arpeggiator in AudioEngine
+        self.audio.update_arpeggio("left_hand", note_index, volume)
 \end{lstlisting}
 
 \textbf{Penjelasan}:
 \begin{itemize}
-    \item \textbf{Hand height} (0-1) dimap ke MIDI notes untuk pitch control
-    \item \textbf{Pinch distance} dimap ke volume (rapat = 0, jauh = 1)
-    \item Arpeggiator menghasilkan notes dengan timing sesuai BPM
-    \item Signal \texttt{note\_played} dikirim ke UI untuk visualization
+    \item \textbf{Hand height} dimap ke index nada dalam skala pentatonik
+    \item \textbf{Pinch distance} dimap ke volume
+    \item \texttt{AudioEngine} menangani playing dan timing dari arpeggio
 \end{itemize}
-
-
 
 \subsubsection{Drum Control}
 
 \begin{lstlisting}[language=Python, caption=Kontrol drum machine dengan tangan kanan]
 def _process_drums(self, hand_info: Dict, frame_shape: Tuple):
     # Get finger extension status
-    fingers = self.hand_tracker.get_fingers_extended('Right')
+    fingers = self.tracker.get_fingers_extended(HandSide.RIGHT.value)
     
-    # Check for fist (pattern change)
-    is_fist = self.hand_tracker.is_fist('Right')
+    # Map fingers to drums
+    active_drums = set()
+    drum_map = {0: 'kick', 1: 'snare', 2: 'hihat', 3: 'clap', 4: 'clap'}
     
-    # Update drum machine
-    result = self.drum_machine.update(
-        fingers_extended=fingers,
-        current_time=time.time(),
-        is_fist=is_fist
-    )
+    for i, is_extended in enumerate(fingers):
+        if is_extended and i in drum_map:
+            active_drums.add(drum_map[i])
     
-    # Emit drum hits
-    if 'drums' in result:
-        for drum_name in result['drums']:
-            velocity = 1.0  # Could be extracted from pattern
-            self.drum_hit.emit(drum_name, velocity)
+    # Update active drums in AudioEngine
+    if self.audio:
+        self.audio.update_drums(active_drums)
 \end{lstlisting}
 
 \textbf{Penjelasan}:
 \begin{itemize}
-    \item Deteksi jari mana saja yang terangkat (5 booleans)
-    \item Jumlah jari terangkat menentukan pattern mana yang aktif
-    \item Fist gesture digunakan untuk cycle ke pattern berikutnya
-    \item Signal \texttt{drum\_hit} dikirim untuk setiap drum yang dimainkan
+    \item Setiap jari dipetakan ke instrumen drum tertentu
+    \item Jika jari terangkat, instrumen tersebut dimasukkan ke \texttt{active\_drums}
+    \item \texttt{AudioEngine} akan memainkan instrumen yang aktif sesuai pattern sequencer
 \end{itemize}
 
 \newpage

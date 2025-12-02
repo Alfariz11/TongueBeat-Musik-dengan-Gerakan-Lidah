@@ -7,18 +7,21 @@
 **Gestune** adalah aplikasi musik interaktif yang memungkinkan pengguna menciptakan musik secara real-time menggunakan gerakan tangan. Memanfaatkan teknologi **MediaPipe Hand Tracking** dan **PyQt6**, aplikasi ini mendeteksi posisi dan gerakan tangan untuk mengontrol dua instrumen musik virtual:
 
 ### 🎹 Arpeggiator (Tangan Kiri)
+
 - **Pitch Control**: Tinggi posisi tangan mengatur nada (3 oktaf penuh)
 - **Volume Control**: Pinch gesture (jarak ibu jari & telunjuk) mengatur volume
 - **BPM Control**: Pinch gesture + gerakan vertikal untuk mengatur tempo (40-200 BPM)
 - Sintesis audio real-time dengan waveform kaya harmonik
 
 ### 🥁 Drum Machine (Tangan Kanan)
-- **5 Instrumen Drum**: Setiap jari mengontrol satu instrumen (Kick, Snare, Hi-hat, Tom, Crash)
-- **7 Pola Drum**: Beragam pattern dari Modern Pop hingga Trap Beat
-- **Pattern Switching**: Gesture tinju untuk mengganti pola drum
-- **16-Step Sequencer**: Dengan dukungan swing dan velocity control
+
+- **Finger Mapping**: Setiap jari mengontrol satu instrumen drum spesifik
+- **5 Instrumen Drum**: Kick, Snare, Hi-hat, Clap (mapped to Ring & Pinky)
+- **Real-time Triggering**: Mengangkat jari mengaktifkan instrumen dalam loop sequencer
+- **16-Step Sequencer**: Engine audio terpadu untuk timing yang presisi
 
 ### 🎨 Fitur Visual
+
 - UI modern dengan dark theme menggunakan PyQt6
 - Live camera feed dengan hand tracking overlay
 - Visualisasi drum hits real-time dengan animasi
@@ -68,13 +71,14 @@
    ```
 
 3. **Install dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. **Verifikasi instalasi** (opsional)
    ```bash
-   python test_drums.py
+   python test_audio_engine.py
    ```
 
 ---
@@ -100,6 +104,7 @@
    ```
 
 3. **Interface akan muncul** dengan:
+
    - Live camera feed di sisi kiri
    - Kontrol panel di sisi kanan
    - Status indicator untuk deteksi tangan
@@ -117,27 +122,27 @@
 - **🎹 Pitch Control**: Gerakkan tangan naik/turun untuk mengubah nada
   - Semakin tinggi tangan = nada semakin tinggi
   - Range: 3 oktaf penuh (C2 - C5)
-  
 - **🎚️ Volume Control**: Pinch gesture (pertemukan ibu jari & telunjuk)
   - Semakin rapat jari = volume semakin kecil
   - Semakin renggang = volume semakin besar
-  
 - **⏱️ BPM Control**: Pinch rapat + gerakkan tangan naik/turun
   - Unlock BPM dengan pinch yang sangat rapat
   - Gerakkan tangan untuk mengatur tempo (40-200 BPM)
 
 #### 👉 Tangan Kanan - Drum Machine Zone (Area Pink)
 
-**Kontrol Instrumen** (setiap jari = 1 instrumen):
+**Kontrol Instrumen** (Angkat jari untuk mengaktifkan):
+
 - **👍 Jempol** → Kick Drum
 - **☝️ Telunjuk** → Snare Drum
 - **🖕 Jari Tengah** → Hi-Hat
-- **💍 Jari Manis** → High Tom
-- **🤙 Kelingking** → Crash Cymbal
+- **💍 Jari Manis** → Clap
+- **🤙 Kelingking** → Clap (Alternatif)
 
-**Ganti Pattern**:
-- **✊ Tinju/Fist** (semua jari tertutup) → Berpindah ke pattern berikutnya
-- Total 7 pattern drum tersedia
+**Catatan**:
+
+- Drum akan bermain dalam loop sequencer selama jari diangkat.
+- Turunkan jari untuk mematikan instrumen tersebut.
 
 #### ⌨️ Kontrol Keyboard
 
@@ -159,23 +164,24 @@
 Untuk memverifikasi sistem audio berfungsi dengan baik:
 
 ```bash
-python test_drums.py
+python test_audio_engine.py
 ```
 
-Program ini akan memutar semua sampel drum secara berurutan untuk memastikan tidak ada masalah audio.
+Program ini akan memutar arpeggio dan drum pattern sederhana untuk memastikan engine audio berjalan lancar.
 
 ---
 
 ## 📅 Logbook Mingguan
 
-| Tanggal    | Kegiatan                                            | Hasil / Progress                                                                                                                                                                                                                                                     |
-| ---------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 10/28/2025 | Pembuatan Repositori GitHub Tugas Besar            | Repositori GitHub tugas besar berhasil dibuat dengan struktur awal proyek                                                                                                                                                                                            |
-| 11/02/2025 | Implementasi Komponen Utama & Integrasi Aplikasi   | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (7 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen. Perbaikan audio system dengan real audio samples, optimisasi code, Custom BPM feature                     |
-| 11/09/2025 | Integrasi PyGame dan Penambahan Fitur              | Integrasi Visualizer dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi dengan efek partikel                                                                                                                              |
-| 11/14/2025 | UI Baru dengan PyQt6 & Bug Fixes                   | Implementasi UI modern menggunakan PyQt6, fixing bugs pada sistem tracking, penambahan kontrol interaktif                                                                                                                                                             |
-| 11/28/2025 | Update Asset dan Pattern Drum                      | Perubahan asset drum dengan kualitas lebih baik, penambahan 2 pattern baru (total 7 pattern), optimisasi audio mixing                                                                                                                                                |
-| 11/30/2025 | Remake Pinch BPM Controller                        | Implementasi kontrol BPM via gesture pinch pada tangan kanan, sinkronisasi perubahan BPM dengan UI slider, smoothing untuk transisi BPM yang halus                                                                                                                   |
-| 12/01/2025 | Update Dokumentasi Laporan Final Proyek Fix Bug           | Update dokumentasi laporan final, perbaikan README, penambahan penjelasan fitur-fitur baru, banner. Perbaikan beberapa bug seperti BPM slider dan arpegiattor yang overlap. Tambah skrip untuk pattern drum. Perubahan minor pada UI                                                                                                                                                                      |
+| Tanggal    | Kegiatan                                         | Hasil / Progress                                                                                                                                                                                                                                 |
+| ---------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 10/28/2025 | Pembuatan Repositori GitHub Tugas Besar          | Repositori GitHub tugas besar berhasil dibuat dengan struktur awal proyek                                                                                                                                                                        |
+| 11/02/2025 | Implementasi Komponen Utama & Integrasi Aplikasi | Hand tracker dengan MediaPipe, Arpeggiator (kontrol pitch & volume), Drum Machine (7 pola ritme), Audio Reactive Visualizer, dan integrasi semua komponen. Perbaikan audio system dengan real audio samples, optimisasi code, Custom BPM feature |
+| 11/09/2025 | Integrasi PyGame dan Penambahan Fitur            | Integrasi Visualizer dari CV2 ke PyGame, Penambahan pattern beat baru dan aset drum terbaru, Perbaikan visualisasi dengan efek partikel                                                                                                          |
+| 11/14/2025 | UI Baru dengan PyQt6 & Bug Fixes                 | Implementasi UI modern menggunakan PyQt6, fixing bugs pada sistem tracking, penambahan kontrol interaktif                                                                                                                                        |
+| 11/28/2025 | Update Asset dan Pattern Drum                    | Perubahan asset drum dengan kualitas lebih baik, penambahan 2 pattern baru (total 7 pattern), optimisasi audio mixing                                                                                                                            |
+| 11/30/2025 | Remake Pinch BPM Controller                      | Implementasi kontrol BPM via gesture pinch pada tangan kanan, sinkronisasi perubahan BPM dengan UI slider, smoothing untuk transisi BPM yang halus                                                                                               |
+| 12/01/2025 | Update Dokumentasi Laporan Final Proyek Fix Bug  | Update dokumentasi laporan final, perbaikan README, penambahan penjelasan fitur-fitur baru, banner. Perbaikan beberapa bug seperti BPM slider dan arpegiattor yang overlap. Tambah skrip untuk pattern drum. Perubahan minor pada UI             |
+| 12/02/2025 | Refactoring Audio Engine & Integrasi Sistem      | Mengganti Arpeggiator dan Drum Machine terpisah dengan AudioEngine terpadu. Implementasi scheduler loop untuk timing yang lebih presisi. Mengubah kontrol drum menjadi finger mapping. Integrasi sukses ke main application.                     |
 
 ---

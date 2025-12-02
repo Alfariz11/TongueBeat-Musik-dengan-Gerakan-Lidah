@@ -12,8 +12,7 @@ from enum import Enum
 from PyQt6.QtCore import QThread, pyqtSignal
 
 from hand_tracker import HandTracker
-from arpeggiator import Arpeggiator
-from drum_machine import DrumMachine
+from audio_engine import AudioEngine
 
 
 class HandSide(Enum):
@@ -71,8 +70,7 @@ class GestureProcessor(QThread):
         # Components
         self.cap: Optional[cv2.VideoCapture] = None
         self.tracker: Optional[HandTracker] = None
-        self.arp: Optional[Arpeggiator] = None
-        self.drum: Optional[DrumMachine] = None
+        self.audio: Optional[AudioEngine] = None
         
         # Performance tracking
         self.stats = ProcessingStats()
@@ -130,21 +128,9 @@ class GestureProcessor(QThread):
             self.tracker = HandTracker()
             print("👋 Hand tracker initialized")
             
-            # Initialize arpeggiator
-            self.arp = Arpeggiator(
-                waveform='rich_sine',
-                attack=0.01,
-                release=0.15
-            )
-            print("🎹 Arpeggiator initialized")
-            
-            # Initialize drum machine
-            self.drum = DrumMachine(
-                master_gain=0.4,
-                bpm=120,
-                swing_amount=0.08
-            )
-            print("🥁 Drum machine initialized")
+            # Initialize AudioEngine
+            self.audio = AudioEngine()
+            print("� AudioEngine initialized")
             
             print("✅ All components successfully initialized!")
             return True
@@ -274,13 +260,22 @@ class GestureProcessor(QThread):
 
             
             # Emit hand detection status (only if changed)
+            # Emit hand detection status (only if changed)
             if left_detected != self.last_hand_states[HandSide.LEFT.value]:
                 self.hand_detected.emit("left", left_detected)
                 self.last_hand_states[HandSide.LEFT.value] = left_detected
+                
+                # Stop arpeggiator if hand lost
+                if not left_detected and self.audio:
+                    self.audio.stop_arpeggio("left_hand")
             
             if right_detected != self.last_hand_states[HandSide.RIGHT.value]:
                 self.hand_detected.emit("right", right_detected)
                 self.last_hand_states[HandSide.RIGHT.value] = right_detected
+                
+                # Stop drums if hand lost
+                if not right_detected and self.audio:
+                    self.audio.update_drums(set())
             
             # Draw performance overlay
             self._draw_performance_overlay(frame)
@@ -309,13 +304,26 @@ class GestureProcessor(QThread):
             # Get pinch distance for volume control
             pinch_distance = self.tracker.get_pinch_distance(HandSide.LEFT.value)
             
-            # Update arpeggiator
-            current_time = time.time()
-            result = self.arp.update(hand_height, pinch_distance, current_time)
-            
-            # Emit note information
-            if result:
-                self.note_played.emit(result['note'], result['volume'])
+            # Map height to note index (0 to len(scale))
+            # Scale has 15 notes (3 octaves * 5 notes)
+            if self.audio:
+                num_notes = len(self.audio.scale)
+                note_index = int(hand_height * num_notes)
+                note_index = max(0, min(note_index, num_notes - 1))
+                
+                # Map pinch to volume
+                volume = max(0.0, min(1.0, (1.0 - pinch_distance)))
+                
+                # Update arpeggiator
+                self.audio.update_arpeggio("left_hand", note_index, volume)
+                
+                # Emit note information (approximate for UI)
+                # We can emit the frequency or just the index
+                freq = self.audio.scale[note_index]
+                # Convert freq to midi for UI display if needed, or just emit index
+                # MIDI = 69 + 12 * log2(freq/440)
+                midi_note = int(69 + 12 * np.log2(freq/440))
+                self.note_played.emit(midi_note, volume)
                 
         except Exception as e:
             print(f"Arpeggiator processing error: {e}")
@@ -332,28 +340,36 @@ class GestureProcessor(QThread):
             # Get which fingers are extended
             fingers_extended = self.tracker.get_fingers_extended(HandSide.RIGHT.value)
             
-            # Check if it's a fist (for pattern change)
-            is_fist = self.tracker.is_fist(HandSide.RIGHT.value)
+            # Map fingers to drums
+            # 0: Thumb -> Kick
+            # 1: Index -> Snare
+            # 2: Middle -> Hihat
+            # 3: Ring -> Clap (mapped to crash in engine for now)
+            # 4: Pinky -> Crash (not in engine default, maybe ignore or map to clap too)
             
-            # Update drum machine
-            current_time = time.time()
-            drum_result = self.drum.update(
-                fingers_extended, 
-                current_time, 
-                is_fist,
-                hand_side=HandSide.RIGHT.value
-            )
+            active_drums = set()
+            drum_map = {0: 'kick', 1: 'snare', 2: 'hihat', 3: 'clap', 4: 'clap'}
             
-            # Emit drum hits with velocity
-            if drum_result and 'played_details' in drum_result:
-                for hit in drum_result['played_details']:
-                    self.drum_hit.emit(hit['drum'], hit['velocity'])
+            for i, is_extended in enumerate(fingers_extended):
+                if is_extended and i in drum_map:
+                    active_drums.add(drum_map[i])
             
-            # Emit pattern change if detected
-            if 'pattern_set' in drum_result:
-                current_pattern = drum_result['pattern_set']
-                self.pattern_changed.emit(current_pattern)
-                
+            if self.audio:
+                self.audio.update_drums(active_drums)
+            
+            # Emit drum hits for UI visualization
+            # Since the engine handles timing, we might not know exactly when it hits
+            # unless we add a callback or just visualize the active state.
+            # For now, we can emit "active" drums as hits with low velocity just to show they are selected?
+            # Or better, just don't emit hits if we can't sync.
+            # The UI uses drum_hit to flash the drum. 
+            # Let's emit a hit if it's active, but maybe throttle it?
+            # Actually, the old code emitted hits when they were PLAYED by the sequencer.
+            # The new engine doesn't report back when a note is played.
+            # We will just emit the active drums so the UI knows they are "on".
+            for drum in active_drums:
+                 self.drum_hit.emit(drum, 0.5)
+
         except Exception as e:
             print(f"Drum processing error: {e}")
     
@@ -577,10 +593,8 @@ class GestureProcessor(QThread):
             bpm: Beats per minute
         """
         try:
-            if self.drum:
-                self.drum.set_bpm(bpm)
-            if self.arp:
-                self.arp.set_bpm(bpm)
+            if self.audio:
+                self.audio.set_bpm(bpm)
             print(f"🎵 BPM set to: {bpm}")
             self.bpm_updated.emit(bpm)
 
@@ -622,24 +636,8 @@ class GestureProcessor(QThread):
         Args:
             pattern_index: Specific pattern index, or None to cycle to next
         """
-        try:
-            if not self.drum:
-                return
-            
-            if pattern_index is not None:
-                # Set specific pattern
-                self.drum.change_pattern_set(pattern_index)
-            else:
-                # Cycle to next pattern
-                current = self.drum.current_pattern_set
-                next_pattern = (current + 1) % len(self.drum.pattern_sets)
-                self.drum.change_pattern_set(next_pattern)
-            
-            self.pattern_changed.emit(self.drum.current_pattern_set)
-            print(f"🎼 Pattern changed to: {self.drum.current_pattern_set + 1}")
-            
-        except Exception as e:
-            print(f"Error changing pattern: {e}")
+        # Pattern changing not implemented in new AudioEngine yet
+        pass
     
     def pause(self):
         """Pause processing."""
@@ -665,13 +663,9 @@ class GestureProcessor(QThread):
                 print("📷 Camera released")
             
             # Cleanup audio components
-            if self.arp:
-                self.arp.cleanup()
-                print("🎹 Arpeggiator cleaned up")
-            
-            if self.drum:
-                self.drum.cleanup()
-                print("🥁 Drum machine cleaned up")
+            if self.audio:
+                self.audio.cleanup()
+                print("� AudioEngine cleaned up")
             
             # Print final statistics
             print("\n📊 Final Statistics:")
